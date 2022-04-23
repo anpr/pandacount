@@ -1,4 +1,5 @@
 #!/Users/anpr/.pyenv/versions/pandacount-3.10.0/bin/python
+from pathlib import Path
 from typing import List, Callable
 
 import yaml
@@ -21,6 +22,14 @@ def skip_lines_until(file_name: str, predicate: Callable[[str], bool]):
         # Go back to the bqeginning of the line
         f.seek(pos)
         yield f
+
+
+def get_account(file_name: str) -> str:
+    stem = Path(file_name).stem
+    _, iban, _ = stem.split("_")
+    iban_account_map = {"DE97500105175409854125": "common", "DE69500105175402313946": "giro"}
+
+    return iban_account_map[iban]
 
 
 def to_raw_df(file_name: str) -> pd.DataFrame:
@@ -46,8 +55,19 @@ def to_raw_df(file_name: str) -> pd.DataFrame:
         raw_df["balance"] = pd.to_numeric(
             raw_df["Saldo"].str.replace(".", "", regex=False).str.replace(",", ".", regex=False)
         )
+
+    raw_df["account"] = get_account(file_name)
     raw_df = raw_df[
-        ["book_date", "valuta_date", "party", "book_text", "purpose", "amount", "balance"]
+        [
+            "account",
+            "book_date",
+            "valuta_date",
+            "party",
+            "book_text",
+            "purpose",
+            "amount",
+            "balance",
+        ]
     ]
     return raw_df
 
@@ -195,6 +215,7 @@ def to_yaml(df: pd.DataFrame) -> str:
         width=120,
         indent=2,
         default_flow_style=False,
+        allow_unicode=True,
     )
     return yml
 
@@ -217,6 +238,9 @@ def from_yaml(yml: str) -> pd.DataFrame:
 
 
 def load_pc() -> pd.DataFrame:
+    if not Path("pandacount.yml").exists():
+        return pd.DataFrame()
+
     with open("pandacount.yml", "r") as f:
         pc = from_yaml(f.read())
     return pc
@@ -229,16 +253,20 @@ def save_pc(pc: pd.DataFrame):
 
 
 def import_to_pandacount(pc: pd.DataFrame, df: pd.DataFrame) -> pd.DataFrame:
-    pc = pc.merge(df, on=["book_date", "valuta_date", "party", "book_text", "purpose", "amount"], suffixes=("", "_y"))
-    pc.drop(axis=1, labels=["balance_y", "category_y"], inplace=True)
+    pc = pd.concat([pc, df], ignore_index=True)
+    pc.drop_duplicates(
+        subset=["account", "book_date", "valuta_date", "party", "book_text", "purpose", "amount"],
+        inplace=True,
+    )
+    pc.sort_values(axis=0, by=["book_date", "account", "valuta_date", "party", "purpose"], inplace=True)
     return pc
 
 
 def main(file_list: List[str]):
     pc = load_pc()
-    for file in file_list:
-        typer.echo(f"Processing {file}")
-        df = pipe(file, to_raw_df, categorize)
+    for file_name in file_list:
+        typer.echo(f"Processing {file_name}")
+        df = pipe(file_name, to_raw_df, categorize)
         pc = import_to_pandacount(pc, df)
 
     save_pc(pc)
