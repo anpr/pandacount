@@ -108,7 +108,7 @@ def categorize(df: pd.DataFrame) -> pd.DataFrame:
         "einnahmen::dividende": {"purpose": ["dividende"]},
         "einnahmen::gehalt::andreas": {"party": ["andreas edmond profous"]},
         "geschenk": {
-            "party": ["VISA SPIELVOGEL"],
+            "party": ["VISA SPIELVOGEL", "popsa"],
             "purpose": ["superiore.de", "geschenk mama", "Marimekko"],
         },
         "gesundheit": {
@@ -117,6 +117,7 @@ def categorize(df: pd.DataFrame) -> pd.DataFrame:
                 "JOSEPHINEN APOTHEKE",
                 "PRAGER APOTHEKE",
                 "FORTUNA APOTHEKE",
+                "PRAGERAPOTHEKE",
             ],
             "purpose": ["Center-Apotheke im Minipreis", "SPEICKSHOP", "SHAVING.IE"],
         },
@@ -347,7 +348,7 @@ def main(file_list: List[str]):
     for file_name in file_list:
         typer.echo(f"Processing {file_name}")
         df = pipe(file_name, to_raw_df)
-        print(f"  Importing dataframe with {df.shape[0]} rows...")
+        print(f"  Importing dataframe with {df.shape[0]} rows (pandacount currently has {pc.shape[0]} rows)...")
         pc = import_to_pandacount(pc, df)
 
     print(f"Categorizing {pc.shape[0]} entries...")
