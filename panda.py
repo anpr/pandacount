@@ -10,6 +10,8 @@ from toolz import pipe
 
 from contextlib import contextmanager
 
+app = typer.Typer()
+
 
 @contextmanager
 def skip_lines_until(file_name: str, predicate: Callable[[str], bool]):
@@ -76,7 +78,7 @@ def to_raw_df(file_name: str) -> pd.DataFrame:
     return raw_df
 
 
-def categorize(df: pd.DataFrame) -> pd.DataFrame:
+def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
     """Sets category column of dataframe."""
     category_attribute_subs_map = {
         "bargeld": {"party": ["bargeldauszahlung"]},
@@ -121,6 +123,7 @@ def categorize(df: pd.DataFrame) -> pd.DataFrame:
             ],
             "purpose": ["Center-Apotheke im Minipreis", "SPEICKSHOP", "SHAVING.IE"],
         },
+        "handy": {"party": ["congstar - eine Marke der Telekom Deutschland GmbH"]},
         "haftpflichtversicherung": {"party": ["asspario Versicherungsdienst AG"]},
         "kleidung": {"party": ["VISA MAGAZZINO"]},
         "kinder": {
@@ -222,9 +225,12 @@ def categorize(df: pd.DataFrame) -> pd.DataFrame:
 
     for category, subs_map in category_attribute_subs_map.items():
         for attribute, subs in subs_map.items():
+            # This is to avoid the mistake that subs is just a string.
+            assert isinstance(subs, list)
             for sub in subs:
                 df.loc[
-                    df[attribute].fillna("").str.lower().str.contains(sub.lower(), regex=False), "category"
+                    df[attribute].fillna("").str.lower().str.contains(sub.lower(), regex=False),
+                    "category",
                 ] = category
 
     df.loc[
@@ -244,7 +250,11 @@ def categorize(df: pd.DataFrame) -> pd.DataFrame:
     ] = "einnahmen::gehalt::andreas"
 
     df.loc[
-        (df.party.fillna("").str.lower().str.contains("Finanzamt Charlottenburg".lower(), regex=False))
+        (
+            df.party.fillna("")
+            .str.lower()
+            .str.contains("Finanzamt Charlottenburg".lower(), regex=False)
+        )
         & (df.book_text == "Gutschrift"),
         "category",
     ] = "einnahmen::steuererstattung"
@@ -329,6 +339,7 @@ def save_pc(pc: pd.DataFrame):
     yml = to_yaml(pc)
     with open("pandacount.yml", "w") as f:
         f.write(yml)
+    print(f"\nStored pandacount.yml with {pc.shape[0]} rows in total")
 
 
 def import_to_pandacount(pc: pd.DataFrame, df: pd.DataFrame) -> pd.DataFrame:
@@ -343,19 +354,32 @@ def import_to_pandacount(pc: pd.DataFrame, df: pd.DataFrame) -> pd.DataFrame:
     return pc
 
 
-def main(file_list: List[str]):
+def categorize_pipeline(pc: pd.DataFrame) -> pd.DataFrame:
+    print(f"Categorizing {pc.shape[0]} entries...")
+    return pipe(pc, transfer_categorize, categorize_df)
+
+
+@app.command()
+def ing_import(file_list: List[str]):
     pc = load_pc()
     for file_name in file_list:
         typer.echo(f"Processing {file_name}")
-        df = pipe(file_name, to_raw_df)
-        print(f"  Importing dataframe with {df.shape[0]} rows (pandacount currently has {pc.shape[0]} rows)...")
+        df = to_raw_df(file_name)
+        print(
+            f"  Importing dataframe with {df.shape[0]} rows (pandacount currently has {pc.shape[0]} rows)..."
+        )
         pc = import_to_pandacount(pc, df)
 
-    print(f"Categorizing {pc.shape[0]} entries...")
-    pc = pipe(pc, transfer_categorize, categorize)
+    categorize_pipeline(pc)
     save_pc(pc)
-    print(f"\nStored pandacount.yml with {pc.shape[0]} rows in total")
+
+
+@app.command()
+def categorize():
+    pc = load_pc()
+    categorize_pipeline(pc)
+    save_pc(pc)
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()

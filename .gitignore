@@ -1,5 +1,5 @@
 __pycache__/
 downloads/
 pandacount.yml
-pandacount-backup.yml
+pandacount-*.yml
 panda_scratch.ipynb
