@@ -136,12 +136,12 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         "kleidung": {"party": ["VISA MAGAZZINO"], "purpose": ["Bestseller Handels B.V"]},
         "kinder": {
             "party": [
-                "Carolina Sgro",
                 "Musikschule City West",
                 "KINDER- UND JUGEND-, REIT- UND FAHRVEREIN ZEHLENDORF E.V.",
             ],
             "purpose": ["Zoologischer Garten Be", "Kinderschwimmen"],
         },
+        "kinder::babysitter": {"party": ["Carolina Sgro"]},
         "kinder::kindergeld": {"party": ["Bundesagentur fur Arbeit - Familienkasse"]},
         "kinder::sparen": {"purpose": ["Sparen Depot Paula", "Sparplan ISIN LU0360863863"]},
         "kinder::schulekita": {
