@@ -2,6 +2,7 @@
 from pathlib import Path
 from typing import List, Callable
 
+import numpy as np
 import yaml
 import pandas as pd
 import typer
@@ -97,6 +98,8 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "VISA REWE VIKTOR ADLER",
                 "VISA LPG BIOMARKT",
                 "VISA BILLA DANKT",
+                "VISA ALDI GMBH",
+                "VISA SUMUP * ADELES CAFE LI",
             ],
             "purpose": [
                 "KoRo Handels GmbH",
@@ -109,6 +112,10 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         },
         "einnahmen::dividende": {"purpose": ["dividende"]},
         "einnahmen::gehalt::andreas": {"party": ["andreas edmond profous"]},
+        "freizeit::sport": {"party": ["Katherine Finger"]},
+        "gesa::amazon": {
+            "party": [("common", "AMAZON PAYMENTS EUROPE"), ("common", "AMAZON EU S.A R.L.")]
+        },
         "geschenk": {
             "party": ["VISA SPIELVOGEL", "popsa"],
             "purpose": ["superiore.de", "geschenk mama", "Marimekko"],
@@ -120,12 +127,13 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "PRAGER APOTHEKE",
                 "FORTUNA APOTHEKE",
                 "PRAGERAPOTHEKE",
+                "VISA PLUSPUNKT APOTHEKE",
             ],
             "purpose": ["Center-Apotheke im Minipreis", "SPEICKSHOP", "SHAVING.IE"],
         },
         "handy": {"party": ["congstar - eine Marke der Telekom Deutschland GmbH"]},
-        "haftpflichtversicherung": {"party": ["asspario Versicherungsdienst AG"]},
-        "kleidung": {"party": ["VISA MAGAZZINO"]},
+        "versicherung::haftpflicht": {"party": ["asspario Versicherungsdienst AG"]},
+        "kleidung": {"party": ["VISA MAGAZZINO"], "purpose": ["Bestseller Handels B.V"]},
         "kinder": {
             "party": [
                 "Carolina Sgro",
@@ -159,6 +167,8 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "audible.de",
                 "netflix.com",
                 "PP.2107.PP . SPOTIFY, Ihr Einkauf b ei SPOTIFY",
+                "PP . DisneyPlus, Ihr Einkau f bei DisneyPlus",
+                "Hugendubel Digital GmbH + Co. KG",
             ],
         },
         "mobilitaet::auto": {
@@ -197,6 +207,8 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
             "party": [
                 "cocolo ramen",
                 "HAPPINESSHEART",
+                "VISA SUMUP *HAPPINESS-HEAR",
+                "VISA SUMUP *HAPPINESSHEART",
                 "lieferando.de",
                 "VISA RESTAURANT LENZIG",
                 "VISA RESTAURANT KOINONIA",
@@ -207,11 +219,16 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "VISA SPC*RESTAURANT BAHADUR",
                 "VISA RESTAURANTE CALIBOCCA",
                 "VISA SY RESTAURANT",
-            ]
+                "VISA YOGIHAUS",
+                "VISA RESTAURANT APRIL",
+                "VISA PARKCAFE BERLIN",
+                "ADELES CAFE LI",
+                "VISA CAFE REST DEL EUROPE",
+            ],
+            "purpose": ["TIAN FU // BERLIN"],
         },
         "rente::gesa": {"party": ["DWS Investment GmbH"]},
         "spenden": {"party": ["Aerzte ohne Grenzen eV"]},
-        "sport": {"party": ["Katherine Finger"]},
         "urlaub": {"purpose": ["Airbnb Payments", "airbnb"]},
         "wohnen": {"purpose": ["Rate, Putzen, Naturstrom", "Ausgleich WEG"]},
         "wohnen::hausratversichterung": {"party": ["COYA Hausrat"]},
@@ -227,12 +244,25 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         for attribute, subs in subs_map.items():
             # This is to avoid the mistake that subs is just a string.
             assert isinstance(subs, list)
-            for sub in subs:
-                df.loc[
-                    df[attribute].fillna("").str.lower().str.contains(sub.lower(), regex=False),
-                    "category",
-                ] = category
-
+            for sub_item in subs:
+                if isinstance(sub_item, str):
+                    sub = sub_item
+                    df.loc[
+                        df[attribute].fillna("").str.lower().str.contains(sub.lower(), regex=False),
+                        "category",
+                    ] = category
+                elif isinstance(sub_item, tuple):
+                    account, sub = sub_item
+                    df.loc[
+                        (
+                            df[attribute]
+                            .fillna("")
+                            .str.lower()
+                            .str.contains(sub.lower(), regex=False)
+                        )
+                        & (df.account == account),
+                        "category",
+                    ] = category
     df.loc[
         (df.party.fillna("").str.lower().str.contains("VISA APPLE.COM/BILL".lower(), regex=False))
         & (df.amount > -50),
@@ -281,6 +311,15 @@ def transfer_categorize(df: pd.DataFrame) -> pd.DataFrame:
                 ] = transfer_category
 
     return df
+
+
+def add_cat(df: pd.DataFrame) -> pd.DataFrame:
+    """Adds cat column to df. It's the "final" category"""
+    # Some values in category_manual are the empty string, some .nan => treat as .nan everywhere
+    df["category_manual"] = df["category_manual"].replace(r"^\s*$", np.nan, regex=True)
+    df["cat"] = df["category_manual"]
+    df["cat"] = df["cat"].where(~df["category_manual"].isna(), df["category"])
+    return df.drop(columns=["category", "category_manual"])
 
 
 def to_yaml(df: pd.DataFrame) -> str:
@@ -370,14 +409,14 @@ def ing_import(file_list: List[str]):
         )
         pc = import_to_pandacount(pc, df)
 
-    categorize_pipeline(pc)
+    pc = categorize_pipeline(pc)
     save_pc(pc)
 
 
 @app.command()
 def categorize():
     pc = load_pc()
-    categorize_pipeline(pc)
+    pc = categorize_pipeline(pc)
     save_pc(pc)
 
 
