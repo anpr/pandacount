@@ -34,6 +34,7 @@ def get_account(file_name: str) -> str:
         "DE97500105175409854125": "common",
         "DE69500105175402313946": "giro",
         "DE27500105175404412327": "gesa",
+        "DE18500105175525166237": "extra",
     }
 
     return iban_account_map[iban]
@@ -82,6 +83,7 @@ def to_raw_df(file_name: str) -> pd.DataFrame:
 def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
     """Sets category column of dataframe."""
     category_attribute_subs_map = {
+        "anwalt::centurion": {"party": ["zirngibl"]},
         "bargeld": {"party": ["bargeldauszahlung"]},
         "einkaufen": {
             "party": [
@@ -100,6 +102,7 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "VISA BILLA DANKT",
                 "VISA ALDI GMBH",
                 "VISA SUMUP * ADELES CAFE LI",
+                "VISA SCHENKE DELIKATESSEN",
             ],
             "purpose": [
                 "KoRo Handels GmbH",
@@ -112,13 +115,18 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         },
         "einnahmen::dividende": {"purpose": ["dividende"]},
         "einnahmen::gehalt::andreas": {"party": ["andreas edmond profous"]},
-        "freizeit::sport": {"party": ["Katherine Finger"]},
+        "freizeit::buch": {
+            "party": ["BUCHHDLG. FERLEMANN", "BUCHHDLG.FERLEMANN+SCHATZER"],
+            "purpose": ["Libri GmbH"],
+        },
+        "freizeit::konzert": {"purpose": ["Eventim AG"]},
+        "freizeit::sport": {"party": ["Katherine Finger", "ELIXIA"]},
         "gesa::amazon": {
             "party": [("common", "AMAZON PAYMENTS EUROPE"), ("common", "AMAZON EU S.A R.L.")]
         },
         "geschenk": {
-            "party": ["VISA SPIELVOGEL", "popsa"],
-            "purpose": ["superiore.de", "geschenk mama", "Marimekko"],
+            "party": ["VISA SPIELVOGEL", "popsa", "Foto Meyer"],
+            "purpose": ["superiore.de", "geschenk mama", "Marimekko", "SPIELVOGEL"],
         },
         "gesundheit": {
             "party": [
@@ -128,30 +136,61 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "FORTUNA APOTHEKE",
                 "PRAGERAPOTHEKE",
                 "VISA PLUSPUNKT APOTHEKE",
+                "VISA ZAHNARZT DR MUELLER",
             ],
             "purpose": ["Center-Apotheke im Minipreis", "SPEICKSHOP", "SHAVING.IE"],
         },
         "handy": {"party": ["congstar - eine Marke der Telekom Deutschland GmbH"]},
-        "versicherung::haftpflicht": {"party": ["asspario Versicherungsdienst AG"]},
-        "kleidung": {"party": ["VISA MAGAZZINO"], "purpose": ["Bestseller Handels B.V"]},
+        "kleidung": {
+            "party": [
+                "VISA MAGAZZINO",
+                "Globetrotter",
+                "VISA OUTDOORLADEN GMBH",
+                "Zalando Payments GmbH",
+                "VISA INTERSPORT FINKE",
+                "KLINGENTHAL GMBH",
+                "MAAS NATUR GMBH GUETERSLOH",
+                "Maas Naturwaren GmbH",
+            ],
+            "purpose": ["Bestseller Handels B.V"],
+        },
         "kinder": {
             "party": [
                 "Musikschule City West",
                 "KINDER- UND JUGEND-, REIT- UND FAHRVEREIN ZEHLENDORF E.V.",
             ],
-            "purpose": ["Zoologischer Garten Be", "Kinderschwimmen"],
+            "purpose": ["Zoologischer Garten Be", "Kinderschwimmen", "ECO Brotbox GmbH"],
         },
         "kinder::babysitter": {"party": ["Carolina Sgro"]},
+        "kinder::kleidung": {
+            "purpose": [
+                "Kleines Schuhwerk",
+                "Kleine Helden",
+                "Petit Bateau Kinderbekleidung",
+                "finkid GmbH",
+                "greenstories KG",
+            ]
+        },
         "kinder::kindergeld": {"party": ["Bundesagentur fur Arbeit - Familienkasse"]},
         "kinder::sparen": {"purpose": ["Sparen Depot Paula", "Sparplan ISIN LU0360863863"]},
+        "kinder::sport": {"party": ["VISA REITSPORT-CENTER", "kokitu / Sascha Splettstoesser"]},
         "kinder::schulekita": {
-            "party": ["NBH Schoeneberg"],
+            "party": ["NBH Schoeneberg", "Forderverein"],
             "purpose": [
                 "Kassenzeichen: 2134900496613 Paula Profous",
                 "Beitrag fur die Sprachforderung",
             ],
         },
         "kinder::theater": {"party": ["Erika Tribbioli"]},
+        "kinder::optiker": {"party": ["Damm Brillen", "VISA DAMM-BRILLEN BERLIN"]},
+        "konferenz": {
+            "party": [
+                "VISA MOLLIEDECONGRESBALIE",
+                "VISA MOL*HOTEL ZUIDERDUIN",
+                "VISA IAIA",
+                "VISA TALLINNFORUM.ORG",
+            ]
+        },
         "justetf": {"party": ["justETF GmbH"]},
         "media": {
             "party": [
@@ -169,7 +208,15 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "PP.2107.PP . SPOTIFY, Ihr Einkauf b ei SPOTIFY",
                 "PP . DisneyPlus, Ihr Einkau f bei DisneyPlus",
                 "Hugendubel Digital GmbH + Co. KG",
+                "Zeit Audio Abo",
             ],
+        },
+        "mitgliedsbeitraege": {
+            "party": [
+                "Deutscher Hochschulverband",
+                "Naturschutzzentrum Okowerk Berlin e.V.",
+                "Bundnis 90 / Die GRUNEN",
+            ]
         },
         "mobilitaet::auto": {
             "party": [
@@ -185,11 +232,15 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
             ],
             "purpose": ["CosmosDirekt Kfz Beitrag"],
         },
-        "mobilitaet::autoleihen": {"party": ["VISA ENTERPRISE RENT A CAR", "VISA RENTALCARS.COM"]},
+        "mobilitaet::autoleihen": {
+            "party": ["VISA ENTERPRISE RENT A CAR", "VISA RENTALCARS.COM", "VISA SIXT"]
+        },
         "mobilitaet::db::oebb:": {"purpose": ["OBB-Personenverkehr AG", "OEBB PV AG"]},
+        "mobilitaet::db": {"party": ["DB Vertrieb GmbH"]},
+        "mobilitaet::faehre": {"party": ["VISA SCANDLINES DEUTSCHLAND"]},
         "mobilitaet::fahrrad": {"party": ["bike market city", "FAHRRADLADEN MEHRINGHOF"]},
         "mobilitaet::fliegen": {
-            "party": ["RYANAIR"],
+            "party": ["RYANAIR", "VISA LUFTHANSA"],
             "purpose": [
                 "ryanair limited",
                 "deutsche lufthansa",
@@ -200,7 +251,10 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
             "party": ["bvg app", "DB Fernverkehr AG"],
             "purpose": ["DB Vertrieb GmbH"],
         },
-        # "intern": {"party": ["andreas profous"]},
+        "moebel::beleuchtung": {
+            "party": ["visa elektrowaren prediger"],
+        },
+        "intern": {"party": ["andreas profous", "profous", "gesa geissler"]},
         "intern::rente": {"purpose": ["Wertpapierkauf"], "book_text": ["Wertpapierkauf"]},
         "intern::steuerklasse": {"purpose": ["Ausgleich Steuerklasse"]},
         "restaurant": {
@@ -224,14 +278,24 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "VISA PARKCAFE BERLIN",
                 "ADELES CAFE LI",
                 "VISA CAFE REST DEL EUROPE",
+                "VISA SPC*SHARMA UND VIR GBR",
+                "VISA LULA DELI AND GRILL",
+                "VISA SUMUP *LIEN & LOAN",
+                "VISA TOMASA ZEHLENDORF",
+                "VISA SAN MARINO RESTAURANT",
+                "VISA TRATTORIA DA NOI",
+                "VISA INDIAN PALACE",
             ],
             "purpose": ["TIAN FU // BERLIN"],
         },
         "rente::gesa": {"party": ["DWS Investment GmbH"]},
-        "spenden": {"party": ["Aerzte ohne Grenzen eV"]},
-        "urlaub": {"purpose": ["Airbnb Payments", "airbnb"]},
+        "spenden": {"party": ["Aerzte ohne Grenzen eV", "Arzte ohne Grenzen"]},
+        "urlaub::unterkunft": {"purpose": ["Airbnb Payments", "airbnb"]},
+        "urlaub::einkaufen": {"party": ["VISA MENY PRAESTOE I/S", "VISA CIRCLE K BARSE RUNDDEL"]},
+        "urlaub::freizeit": {"party": ["VISA KALVEHAVE LABYRINTPARK", "VISA DANMARKS BORGCENTER"]},
+        "versicherung::haftpflicht": {"party": ["asspario Versicherungsdienst AG"]},
+        "versicherung::hausratversichterung": {"party": ["COYA Hausrat"], "purpose": ["COYA Hausrat"]},
         "wohnen": {"purpose": ["Rate, Putzen, Naturstrom", "Ausgleich WEG"]},
-        "wohnen::hausratversichterung": {"party": ["COYA Hausrat"]},
         "wohnen::grundsteuer": {"purpose": ["STEUERNR 024/749/07849 GRUNDST"]},
         "wohnen::GEZ": {"party": ["Rundfunk ARD, ZDF, DRadio"]},
         "wohnen::strom": {"party": ["NaturStromHandel GmbH"]},
@@ -300,7 +364,10 @@ def transfer_categorize(df: pd.DataFrame) -> pd.DataFrame:
         "giro::common": {
             "purpose": ["Rate, Putzen, Naturstrom", "Ausgleich WEG", "Sparen Depot Paula"]
         },
+        "giro::extra": {"purpose": ["giro::extra"]},
     }
+
+    df.loc[(df["amount"] < 0) & (df["account"] == "extra"), "transfer_category"] = "extra::giro"
 
     for transfer_category, subs_map in transfer_category_attribute_subs_map.items():
         for attribute, subs in subs_map.items():
