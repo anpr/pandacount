@@ -1,4 +1,4 @@
-#!/Users/anpr/.pyenv/versions/pandacount-3.10.0/bin/python
+#!/usr/bin/env python
 from pathlib import Path
 from typing import List, Callable
 
@@ -22,7 +22,7 @@ def skip_lines_until(file_name: str, predicate: Callable[[str], bool]):
         pos = f.tell()
         while not predicate(f.readline()):
             pos = f.tell()
-        # Go back to the bqeginning of the line
+        # Go back to the beginning of the line
         f.seek(pos)
         yield f
 
