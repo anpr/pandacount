@@ -82,7 +82,7 @@ def to_raw_df(file_name: str) -> pd.DataFrame:
 
 def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
     """Sets category column of dataframe."""
-    category_attribute_subs_map = {
+    category_attribute_subs_map: dict[str, dict] = {
         "anwalt::centurion": {"party": ["zirngibl"]},
         "bargeld": {"party": ["bargeldauszahlung"]},
         "einkaufen": {
@@ -294,7 +294,10 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         "urlaub::einkaufen": {"party": ["VISA MENY PRAESTOE I/S", "VISA CIRCLE K BARSE RUNDDEL"]},
         "urlaub::freizeit": {"party": ["VISA KALVEHAVE LABYRINTPARK", "VISA DANMARKS BORGCENTER"]},
         "versicherung::haftpflicht": {"party": ["asspario Versicherungsdienst AG"]},
-        "versicherung::hausratversichterung": {"party": ["COYA Hausrat"], "purpose": ["COYA Hausrat"]},
+        "versicherung::hausratversichterung": {
+            "party": ["COYA Hausrat"],
+            "purpose": ["COYA Hausrat"],
+        },
         "wohnen": {"purpose": ["Rate, Putzen, Naturstrom", "Ausgleich WEG"]},
         "wohnen::grundsteuer": {"purpose": ["STEUERNR 024/749/07849 GRUNDST"]},
         "wohnen::GEZ": {"party": ["Rundfunk ARD, ZDF, DRadio"]},
