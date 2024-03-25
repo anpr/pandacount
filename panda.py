@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from pathlib import Path
-from typing import List, Callable
+from typing import Callable
 
 import numpy as np
 import yaml
@@ -83,8 +83,8 @@ def to_raw_df(file_name: str) -> pd.DataFrame:
 def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
     """Sets category column of dataframe."""
     category_attribute_subs_map: dict[str, dict] = {
-        "anwalt::centurion": {"party": ["zirngibl"]},
-        "bargeld": {"party": ["bargeldauszahlung"]},
+        "anwalt::centurion": {"party": ["zirngibl", "KNH Rechtsanwaelte"]},
+        "bargeld": {"party": ["bargeldauszahlung"], "purpose": ["ING Bargeld Ausz"]},
         "einkaufen": {
             "party": [
                 "bio company",
@@ -103,6 +103,9 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "VISA ALDI GMBH",
                 "VISA SUMUP * ADELES CAFE LI",
                 "VISA SCHENKE DELIKATESSEN",
+                "VISA BUDNI SAGT DANKE",
+                "VISA ROSSMANN 2425",
+                "VISA SCHENKE EXPRESSMARKT &",
             ],
             "purpose": [
                 "KoRo Handels GmbH",
@@ -120,6 +123,7 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
             "purpose": ["Libri GmbH"],
         },
         "freizeit::konzert": {"purpose": ["Eventim AG"]},
+        "freizeit": {"party": ["VISA KANT KINO"]},
         "freizeit::sport": {"party": ["Katherine Finger", "ELIXIA"]},
         "gesa::amazon": {
             "party": [("common", "AMAZON PAYMENTS EUROPE"), ("common", "AMAZON EU S.A R.L.")]
@@ -137,6 +141,10 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "PRAGERAPOTHEKE",
                 "VISA PLUSPUNKT APOTHEKE",
                 "VISA ZAHNARZT DR MUELLER",
+                "VISA ADLER - APOTHEKE INH.",
+                "VISA ADLER - APOTHEKE INH.J",
+                "VISA APOTHEKE AM ZOB",
+                "FALKEN SAMMER DEPPNER",  # Beratung PKV
             ],
             "purpose": ["Center-Apotheke im Minipreis", "SPEICKSHOP", "SHAVING.IE"],
         },
@@ -151,6 +159,7 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "KLINGENTHAL GMBH",
                 "MAAS NATUR GMBH GUETERSLOH",
                 "Maas Naturwaren GmbH",
+                "VISA THINK STORE",
             ],
             "purpose": ["Bestseller Handels B.V"],
         },
@@ -158,6 +167,8 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
             "party": [
                 "Musikschule City West",
                 "KINDER- UND JUGEND-, REIT- UND FAHRVEREIN ZEHLENDORF E.V.",
+                "Kinder- und Jugend-, Reit- undFahrverein Zehlendorf e.V.",
+                "KINDER- und JUGEND-REIT- und FAHRVEREIN ZEHLENDORF e.V.",
             ],
             "purpose": ["Zoologischer Garten Be", "Kinderschwimmen", "ECO Brotbox GmbH"],
         },
@@ -169,6 +180,7 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "Petit Bateau Kinderbekleidung",
                 "finkid GmbH",
                 "greenstories KG",
+                "VISA KLEINE HELDEN",
             ]
         },
         "kinder::kindergeld": {"party": ["Bundesagentur fur Arbeit - Familienkasse"]},
@@ -229,6 +241,8 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "Worldline Sweden AB fuer Shell",
                 "VISA ARAL STATION",
                 "VISA STAR TANKSTELLE",
+                "Landeshauptkasse Berlin",
+                "VISA ESSO STATION",
             ],
             "purpose": ["CosmosDirekt Kfz Beitrag"],
         },
@@ -237,10 +251,16 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         },
         "mobilitaet::db::oebb:": {"purpose": ["OBB-Personenverkehr AG", "OEBB PV AG"]},
         "mobilitaet::db": {"party": ["DB Vertrieb GmbH"]},
-        "mobilitaet::faehre": {"party": ["VISA SCANDLINES DEUTSCHLAND"]},
+        "mobilitaet::faehre": {"party": ["VISA SCANDLINES DEUTSCHLAND", "VISA DIRECTF"]},
         "mobilitaet::fahrrad": {"party": ["bike market city", "FAHRRADLADEN MEHRINGHOF"]},
         "mobilitaet::fliegen": {
-            "party": ["RYANAIR", "VISA LUFTHANSA"],
+            "party": [
+                "RYANAIR",
+                "VISA LUFTHANSA",
+                "VISA FLIGHTS ON BOOKING.COM",
+                "VISA SWISS.COM",
+                "VISA AUSTRIAN AI",
+            ],
             "purpose": [
                 "ryanair limited",
                 "deutsche lufthansa",
@@ -251,9 +271,12 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
             "party": ["bvg app", "DB Fernverkehr AG"],
             "purpose": ["DB Vertrieb GmbH"],
         },
+        "moebel::bad": {"party": ["VISA MOEVE SHOP"]},
+        "moebel::kueche": {"party": ["VISA ZETTLE *K-TEK KUCHENAR"]},
         "moebel::beleuchtung": {
-            "party": ["visa elektrowaren prediger"],
+            "party": ["visa elektrowaren prediger", "Elektroanlagen-Technik Pockrandt"],
         },
+        "moebel::geraete": {"party": ["eShoppen Germany GmbH"]},
         "intern": {"party": ["andreas profous", "profous", "gesa geissler"]},
         "intern::rente": {"purpose": ["Wertpapierkauf"], "book_text": ["Wertpapierkauf"]},
         "intern::steuerklasse": {"purpose": ["Ausgleich Steuerklasse"]},
@@ -285,15 +308,41 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "VISA SAN MARINO RESTAURANT",
                 "VISA TRATTORIA DA NOI",
                 "VISA INDIAN PALACE",
+                "CAFE KUCHENZEI",
+                "VISA JULES GEISBERG",
+                "VISA SUMUP *CLAUDIOS ARS V",
+                "VISA ANTICA TAVERNA SRL",
+                "VISA CAFFETTERIA DEGLI UFFI",
+                "VISA ZOO GASTRONOMIE",
+                "VISA SUMUP *LIEN LOAN",
+                "VISA BAECKEREI UND KONDITOR",
+                "VISA ALTES GASTHAUS BERMPOH",
+                "VISA LE NAPOLEON",
+                "VISA RESTAURANT A TELHA",
+                "VISA JAPANESE BISTRO",
+                "VISA TOMASA FRIEDENAU",
+                "VISA OSTERIA DEL NONNO",
             ],
             "purpose": ["TIAN FU // BERLIN"],
         },
         "rente::gesa": {"party": ["DWS Investment GmbH"]},
         "spenden": {"party": ["Aerzte ohne Grenzen eV", "Arzte ohne Grenzen"]},
-        "urlaub::unterkunft": {"purpose": ["Airbnb Payments", "airbnb"]},
-        "urlaub::einkaufen": {"party": ["VISA MENY PRAESTOE I/S", "VISA CIRCLE K BARSE RUNDDEL"]},
+        "urlaub::unterkunft": {
+            "purpose": ["Airbnb Payments", "airbnb"],
+            "party": ["VISA BKG*BOOKING.COM HOTEL", "VISA AIRBNB", "VISA HAMPTON BY HILTON"],
+        },
+        "urlaub::einkaufen": {
+            "party": [
+                "VISA MENY PRAESTOE I/S",
+                "VISA CIRCLE K BARSE RUNDDEL",
+                "VISA CARREFOUR CONTACT",
+                "VISA CONAD",
+            ]
+        },
         "urlaub::freizeit": {"party": ["VISA KALVEHAVE LABYRINTPARK", "VISA DANMARKS BORGCENTER"]},
-        "versicherung::haftpflicht": {"party": ["asspario Versicherungsdienst AG"]},
+        "versicherung::haftpflicht": {
+            "party": ["asspario Versicherungsdienst AG", "ASSPARIO GmbH"]
+        },
         "versicherung::hausratversichterung": {
             "party": ["COYA Hausrat"],
             "purpose": ["COYA Hausrat"],
@@ -469,7 +518,7 @@ def categorize_pipeline(pc: pd.DataFrame) -> pd.DataFrame:
 
 
 @app.command()
-def ing_import(file_list: List[str]):
+def ing_import(file_list: list[str]):
     pc = load_pc()
     for file_name in file_list:
         typer.echo(f"Processing {file_name}")
