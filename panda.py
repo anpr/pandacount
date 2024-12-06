@@ -35,6 +35,7 @@ def get_account(file_name: str) -> str:
         "DE69500105175402313946": "giro",
         "DE27500105175404412327": "gesa",
         "DE18500105175525166237": "extra",
+        "DE28500105175544958810": "extra-common"
     }
 
     return iban_account_map[iban]
