@@ -90,6 +90,7 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
             "party": [
                 "bio company",
                 "biobackhaus",
+                "VISA DENNS BIOMARKT BERLIN",
                 "edeka",
                 "dm-drogerie",
                 "steinecke",
@@ -162,8 +163,9 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         "gesundheit::vorleistung": {
             "party": [
                 "Dr. Kitty Velmer",
+                "Dr. med. U. Kraffel",
                 "MVZ Hautarztpraxis Wilmersdorf GmbH",
-                "Prof.Dr.med.habil Wolfgang Hardt",
+                "Prof. Dr. med. habil Wolfgang Hardt",
                 "Lungenpraxis Hohenzollerndamm",
                 "Dr.med.Monika Kalus,Dr.med.Jorrit Brunnemann",
             ],
@@ -210,7 +212,13 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         "kinder::kindergeld": {"party": ["Bundesagentur fur Arbeit - Familienkasse"]},
         "kinder::museum": {"party": ["Jugend im Museum e.V."]},
         "kinder::sparen": {"purpose": ["Sparen Depot Paula", "Sparplan ISIN LU0360863863"]},
-        "kinder::sport": {"party": ["VISA REITSPORT-CENTER", "kokitu / Sascha Splettstoesser"]},
+        "kinder::sport": {
+            "party": [
+                "VISA REITSPORT-CENTER",
+                "kokitu / Sascha Splettstoesser",
+                "marameo Berlin e. V.",
+            ]
+        },
         "kinder::schulekita": {
             "party": ["NBH Schoeneberg", "Forderverein", "Finow-Grundschule e.V."],
             "purpose": [
@@ -264,6 +272,7 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "Deutscher Hochschulverband",
                 "Naturschutzzentrum Okowerk Berlin e.V.",
                 "Bundnis 90 / Die GRUNEN",
+                "UVP-Gesellschaft e.V.",
             ]
         },
         "mobilitaet::auto": {
@@ -279,6 +288,7 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "VISA STAR TANKSTELLE",
                 "Landeshauptkasse Berlin",
                 "VISA ESSO STATION",
+                "VISA ARAL TANKSTELLE 286077",
             ],
             "purpose": ["CosmosDirekt Kfz Beitrag"],
         },
@@ -292,6 +302,7 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "VISA AGIP SERVICE-STATION",
             ]
         },
+        "mobilitaet::deutschlandticket": {"party": ["S-Bahn Berlin GmbH"]},
         "mobilitaet::db::oebb:": {"purpose": ["OBB-Personenverkehr AG", "OEBB PV AG"]},
         "mobilitaet::db": {"party": ["DB Vertrieb GmbH"]},
         "mobilitaet::faehre": {
@@ -332,6 +343,9 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
             "party": [
                 "cocolo ramen",
                 "VISA RENGER PATZSCH",
+                "VISA RESTAURANT MESOB",
+                "VISA RESTAURANT SCHNITZELEI",
+                "VISA CAFE LAMA",
                 "VISA IL MIO RISTORANTE",
                 "VISA KUSHINOYA",
                 "VISA RISTORANTE BOCCACELLI",
