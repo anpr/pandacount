@@ -129,6 +129,15 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         "gesa::amazon": {
             "party": [("common", "AMAZON PAYMENTS EUROPE"), ("common", "AMAZON EU S.A R.L.")]
         },
+        "gesa::dienstreise::unterkunft": {
+            "party": [
+                "VISA THE HENDRICK",
+                "Hostel-Gaestehaus- Kaiserpassage",
+                "VISA HOTEL WALDERHAUS",
+            ]
+        },
+        "gesa::arbeit::software": {"party": ["VISA ZOTERO.ORG", "VISA DEEPL* SUB BTLT6OUUVV6"]},
+        "gesa::friseur": {"party": ["Fahlke Horstmann"]},
         "geschenk": {
             "party": ["VISA SPIELVOGEL", "popsa", "Foto Meyer", "VISA TOYS WORLD"],
             "purpose": ["superiore.de", "geschenk mama", "Marimekko", "SPIELVOGEL"],
@@ -150,6 +159,15 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
             "purpose": ["Center-Apotheke im Minipreis", "SPEICKSHOP", "SHAVING.IE"],
         },
         "gesundheit::debeka": {"party": ["Debeka Kranken-Versicherung-Verein a.G"]},
+        "gesundheit::vorleistung": {
+            "party": [
+                "Dr. Kitty Velmer",
+                "MVZ Hautarztpraxis Wilmersdorf GmbH",
+                "Prof.Dr.med.habil Wolfgang Hardt",
+                "Lungenpraxis Hohenzollerndamm",
+                "Dr.med.Monika Kalus,Dr.med.Jorrit Brunnemann",
+            ],
+        },
         "handy": {"party": ["congstar - eine Marke der Telekom Deutschland GmbH"]},
         "kleidung": {
             "party": [
@@ -162,15 +180,18 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "MAAS NATUR GMBH GUETERSLOH",
                 "Maas Naturwaren GmbH",
                 "VISA THINK STORE",
+                "VISA KLINGENTHAL GUETERSLOH",
+                "VISA HIRSCHMANN MODE",
+                "VISA KIRSTEN WLOTZKE MAST",
+                "VISA MAAS NATUR GMBH",
+                "VISA OSKA",
             ],
             "purpose": ["Bestseller Handels B.V"],
         },
         "kinder": {
             "party": [
                 "Musikschule City West",
-                "KINDER- UND JUGEND-, REIT- UND FAHRVEREIN ZEHLENDORF E.V.",
-                "Kinder- und Jugend-, Reit- undFahrverein Zehlendorf e.V.",
-                "KINDER- und JUGEND-REIT- und FAHRVEREIN ZEHLENDORF e.V.",
+                "VISA ZETTLE *BOULDERWORX KL",
             ],
             "purpose": ["Zoologischer Garten Be", "Kinderschwimmen", "ECO Brotbox GmbH"],
         },
@@ -183,9 +204,11 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "finkid GmbH",
                 "greenstories KG",
                 "VISA KLEINE HELDEN",
+                "VISA KLIX - KLEINE SACHEN",
             ]
         },
         "kinder::kindergeld": {"party": ["Bundesagentur fur Arbeit - Familienkasse"]},
+        "kinder::museum": {"party": ["Jugend im Museum e.V."]},
         "kinder::sparen": {"purpose": ["Sparen Depot Paula", "Sparplan ISIN LU0360863863"]},
         "kinder::sport": {"party": ["VISA REITSPORT-CENTER", "kokitu / Sascha Splettstoesser"]},
         "kinder::schulekita": {
@@ -193,12 +216,20 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
             "purpose": [
                 "Kassenzeichen: 2134900496613 Paula Profous",
                 "Beitrag fur die Sprachforderung",
-                "Beitrag fuer die Sprachfoerderung"
+                "Beitrag fuer die Sprachfoerderung",
             ],
         },
         "kinder::theater": {"party": ["Erika Tribbioli"]},
         "kinder::optiker": {"party": ["Damm Brillen", "VISA DAMM-BRILLEN BERLIN"]},
-        "kinder::reiten": {"party": ["Reit- und Fahrverein Zehlendorf e.V.", "KFRFZ e.V."]},
+        "kinder::reiten": {
+            "party": [
+                "Reit- und Fahrverein Zehlendorf e.V.",
+                "KFRFZ e.V.",
+                "KINDER- UND JUGEND-, REIT- UND FAHRVEREIN ZEHLENDORF E.V.",
+                "Kinder- und Jugend-, Reit- undFahrverein Zehlendorf e.V.",
+                "KINDER- und JUGEND-REIT- und FAHRVEREIN ZEHLENDORF e.V.",
+            ]
+        },
         "konferenz": {
             "party": [
                 "VISA MOLLIEDECONGRESBALIE",
@@ -263,7 +294,9 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         },
         "mobilitaet::db::oebb:": {"purpose": ["OBB-Personenverkehr AG", "OEBB PV AG"]},
         "mobilitaet::db": {"party": ["DB Vertrieb GmbH"]},
-        "mobilitaet::faehre": {"party": ["VISA SCANDLINES DEUTSCHLAND", "VISA DIRECTF", "VISA TT-LINE GMBH & CO. KG"]},
+        "mobilitaet::faehre": {
+            "party": ["VISA SCANDLINES DEUTSCHLAND", "VISA DIRECTF", "VISA TT-LINE GMBH & CO. KG"]
+        },
         "mobilitaet::fahrrad": {"party": ["bike market city", "FAHRRADLADEN MEHRINGHOF"]},
         "mobilitaet::fliegen": {
             "party": [
@@ -298,6 +331,11 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         "restaurant": {
             "party": [
                 "cocolo ramen",
+                "VISA RENGER PATZSCH",
+                "VISA IL MIO RISTORANTE",
+                "VISA KUSHINOYA",
+                "VISA RISTORANTE BOCCACELLI",
+                "VISA KANAAN RESTAURANT",
                 "VISA RESTAURANT PRATIRIO",
                 "VISA LUCA CAFE AM NEUEN SEE",
                 "VISA ALTER HAFEN GASTHAUS",
@@ -427,16 +465,16 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
     ] = "einnahmen::gehalt::gesa"
 
     df.loc[
-        (df.account == "giro") &
-        ((df.party == "Kreuzwerker") | (df.party == "ANDREAS EDMOND PROFOUS")),
+        (df.account == "giro")
+        & ((df.party == "Kreuzwerker") | (df.party == "ANDREAS EDMOND PROFOUS")),
         "category",
     ] = "einnahmen::gehalt::andreas"
 
     # This is necessary because the party might be andreas, so it could be overwritten as internal.
     df.loc[
-        (df.account == "giro") &
-        (df.purpose.str.contains("Smartbroker", case=False, na=False)) &
-        (df.amount > 0),
+        (df.account == "giro")
+        & (df.purpose.str.contains("Smartbroker", case=False, na=False))
+        & (df.amount > 0),
         "category",
     ] = "einnahmen::dividende"
 
