@@ -43,7 +43,7 @@ def get_account(file_name: str) -> str:
 
 def to_raw_df(file_name: str) -> pd.DataFrame:
     with skip_lines_until(
-        file_name, lambda line: line.startswith("Buchung;Valuta;Auftraggeber")
+        file_name, lambda line: line.startswith("Buchung;Wertstellungsdatum;Auftraggeber")
     ) as f:
         raw_df = pd.read_csv(f, sep=";", encoding="iso-8859-1")
         raw_df.rename(
@@ -57,7 +57,7 @@ def to_raw_df(file_name: str) -> pd.DataFrame:
             inplace=True,
         )
         raw_df["book_date"] = pd.to_datetime(raw_df["Buchung"], dayfirst=True)
-        raw_df["valuta_date"] = pd.to_datetime(raw_df["Valuta"], dayfirst=True)
+        raw_df["valuta_date"] = pd.to_datetime(raw_df["Wertstellungsdatum"], dayfirst=True)
         raw_df["amount"] = pd.to_numeric(
             raw_df["Betrag"].str.replace(".", "", regex=False).str.replace(",", ".", regex=False)
         )
