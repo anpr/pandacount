@@ -1,5 +1,5 @@
 [tools]
-python = '3.13.1'
+python = '3.13.7'
 
 [env]
-_.python.venv = { path ='.venv/pandacount-3.13.1', create = true}
+_.python.venv = { path ='.venv/pandacount-3.13.7', create = true}
