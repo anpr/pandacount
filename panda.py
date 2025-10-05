@@ -342,6 +342,7 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         "restaurant": {
             "party": [
                 "cocolo ramen",
+                "VISA 41 QUARANTUNO",
                 "VISA RENGER PATZSCH",
                 "VISA RESTAURANT MESOB",
                 "VISA RESTAURANT SCHNITZELEI",
