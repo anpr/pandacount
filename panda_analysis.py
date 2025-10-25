@@ -10,11 +10,11 @@ def __():
     import datetime
     import pandas as pd
     import matplotlib.pyplot as plt
-    from panda import load_pc, add_cat
+    from panda import load_pc_from_db, add_cat
 
-    pc = load_pc()
+    pc = load_pc_from_db()
     pc = add_cat(pc)
-    return datetime, pd, plt, load_pc, add_cat, pc
+    return datetime, pd, plt, load_pc_from_db, add_cat, pc
 
 
 @app.cell

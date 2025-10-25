@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 from pathlib import Path
 from typing import Callable
+import hashlib
 
+import duckdb
 import numpy as np
-import yaml
 import pandas as pd
 import typer
 from toolz import pipe
@@ -539,63 +540,165 @@ def add_cat(df: pd.DataFrame) -> pd.DataFrame:
     return df.drop(columns=["category", "category_manual"])
 
 
-def to_yaml(df: pd.DataFrame) -> str:
+# DuckDB Functions
+
+
+def get_db_path() -> Path:
+    """Get the path to the DuckDB database file."""
+    return Path("pandacount.duckdb")
+
+
+def generate_fingerprint(row: pd.Series) -> str:
+    """Generate deterministic fingerprint from natural key fields.
+
+    Natural key: account, book_date, valuta_date, party, book_text, purpose, amount_cents
     """
-    Convert the dataframe to a yaml file.
+    # Convert date to ISO string for consistency
+    book_date_str = row["book_date"].strftime("%Y-%m-%d") if pd.notna(row["book_date"]) else ""
+    valuta_date_str = row["valuta_date"].strftime("%Y-%m-%d") if pd.notna(row["valuta_date"]) else ""
 
-    Args:
-        df: The dataframe to convert.
+    # Handle None/NaN values consistently
+    account = str(row["account"]) if pd.notna(row["account"]) else ""
+    party = str(row["party"]) if pd.notna(row["party"]) else ""
+    book_text = str(row["book_text"]) if pd.notna(row["book_text"]) else ""
+    purpose = str(row["purpose"]) if pd.notna(row["purpose"]) else ""
+    amount_cents = str(row["amount_cents"]) if pd.notna(row["amount_cents"]) else "0"
 
-    Returns:
-        The dataframe as a yaml file.
+    # Combine all fields with separator
+    combined = f"{account}|{book_date_str}|{valuta_date_str}|{party}|{book_text}|{purpose}|{amount_cents}"
+
+    # Generate SHA256 hash
+    return hashlib.sha256(combined.encode("utf-8")).hexdigest()
+
+
+def create_tables(con: duckdb.DuckDBPyConnection):
+    """Create the database schema if it doesn't exist."""
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS transactions (
+            transaction_id INTEGER PRIMARY KEY,
+            account TEXT NOT NULL,
+            book_date DATE NOT NULL,
+            valuta_date DATE NOT NULL,
+            party TEXT,
+            book_text TEXT,
+            purpose TEXT,
+            amount_cents INTEGER NOT NULL,
+            balance_cents INTEGER,
+            transfer_category TEXT,
+            category TEXT,
+            category_manual TEXT,
+            fingerprint TEXT NOT NULL UNIQUE,
+            imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+
+def load_pc_from_db() -> pd.DataFrame:
+    """Load transactions from DuckDB database.
+
+    Converts amount_cents and balance_cents back to decimal for pandas compatibility.
     """
-    yaml_df = df.copy()
-    yaml_df["book_date"] = df.book_date.dt.strftime("%Y-%m-%d")
-    yaml_df["valuta_date"] = df.valuta_date.dt.strftime("%Y-%m-%d")
-    if "category_manual" not in yaml_df.columns:
-        yaml_df["category_manual"] = ""
-    yml = yaml.dump(
-        yaml_df.reset_index().to_dict(orient="records"),
-        sort_keys=False,
-        width=120,
-        indent=2,
-        default_flow_style=False,
-        allow_unicode=True,
-    )
-    return yml
+    db_path = get_db_path()
 
-
-def from_yaml(yml: str) -> pd.DataFrame:
-    """
-    Convert a yaml file to a dataframe.
-
-    Args:
-        yml: The yaml file to convert.
-
-    Returns:
-        The yaml file as a dataframe.
-    """
-    df = pd.DataFrame(yaml.load(yml, yaml.Loader))
-    df["book_date"] = pd.to_datetime(df["book_date"])
-    df["valuta_date"] = pd.to_datetime(df["valuta_date"])
-    df.drop(labels=["index"], axis=1, inplace=True)
-    return df
-
-
-def load_pc() -> pd.DataFrame:
-    if not Path("pandacount.yml").exists():
+    if not db_path.exists():
         return pd.DataFrame()
 
-    with open("pandacount.yml", "r") as f:
-        pc = from_yaml(f.read())
-    return pc
+    con = duckdb.connect(str(db_path))
+    try:
+        df = con.execute("""
+            SELECT
+                account,
+                book_date,
+                valuta_date,
+                party,
+                book_text,
+                purpose,
+                amount_cents,
+                balance_cents,
+                transfer_category,
+                category,
+                category_manual
+            FROM transactions
+            ORDER BY book_date, account, valuta_date, party, purpose
+        """).df()
+
+        # Convert cents back to decimal amounts
+        df["amount"] = df["amount_cents"] / 100.0
+        df["balance"] = df["balance_cents"] / 100.0
+
+        # Drop the cents columns (keep only decimal versions for pandas)
+        df = df.drop(columns=["amount_cents", "balance_cents"])
+
+        return df
+    finally:
+        con.close()
 
 
-def save_pc(pc: pd.DataFrame):
-    yml = to_yaml(pc)
-    with open("pandacount.yml", "w") as f:
-        f.write(yml)
-    print(f"\nStored pandacount.yml with {pc.shape[0]} rows in total")
+def save_pc_to_db(pc: pd.DataFrame):
+    """Upsert transactions to DuckDB database using fingerprint-based deduplication.
+
+    Inserts new transactions and updates existing ones based on fingerprint.
+    """
+    db_path = get_db_path()
+    con = duckdb.connect(str(db_path))
+
+    try:
+        create_tables(con)
+
+        # Prepare dataframe for insertion
+        pc_insert = pc.copy()
+
+        # Convert amount and balance to cents (integers)
+        pc_insert["amount_cents"] = (pc_insert["amount"] * 100).round().astype("Int64")
+        pc_insert["balance_cents"] = (pc_insert["balance"] * 100).round().astype("Int64")
+
+        # Generate fingerprint for each row
+        pc_insert["fingerprint"] = pc_insert.apply(generate_fingerprint, axis=1)
+
+        # Get next available transaction_id
+        max_id_result = con.execute("SELECT COALESCE(MAX(transaction_id), 0) FROM transactions").fetchone()
+        next_id = max_id_result[0] + 1 if max_id_result else 1
+
+        # Assign transaction_ids (these will be used for new rows only)
+        pc_insert["transaction_id"] = range(next_id, next_id + len(pc_insert))
+
+        # Select columns for insertion
+        pc_insert = pc_insert[[
+            "transaction_id",
+            "account",
+            "book_date",
+            "valuta_date",
+            "party",
+            "book_text",
+            "purpose",
+            "amount_cents",
+            "balance_cents",
+            "transfer_category",
+            "category",
+            "category_manual",
+            "fingerprint"
+        ]]
+
+        # Upsert using INSERT ON CONFLICT
+        con.execute("""
+            INSERT INTO transactions (
+                transaction_id, account, book_date, valuta_date,
+                party, book_text, purpose, amount_cents, balance_cents,
+                transfer_category, category, category_manual, fingerprint
+            )
+            SELECT * FROM pc_insert
+            ON CONFLICT (fingerprint)
+            DO UPDATE SET
+                transfer_category = EXCLUDED.transfer_category,
+                category = EXCLUDED.category,
+                category_manual = EXCLUDED.category_manual,
+                balance_cents = EXCLUDED.balance_cents
+        """)
+
+        row_count = con.execute("SELECT COUNT(*) FROM transactions").fetchone()[0]
+        print(f"\nStored pandacount.duckdb with {row_count} rows in total")
+    finally:
+        con.close()
 
 
 def import_to_pandacount(pc: pd.DataFrame, df: pd.DataFrame) -> pd.DataFrame:
@@ -617,7 +720,9 @@ def categorize_pipeline(pc: pd.DataFrame) -> pd.DataFrame:
 
 @app.command()
 def ing_import(file_list: list[str]):
-    pc = load_pc()
+    """Import ING bank CSV files."""
+    pc = load_pc_from_db()
+
     for file_name in file_list:
         typer.echo(f"Processing {file_name}")
         df = to_raw_df(file_name)
@@ -627,14 +732,15 @@ def ing_import(file_list: list[str]):
         pc = import_to_pandacount(pc, df)
 
     pc = categorize_pipeline(pc)
-    save_pc(pc)
+    save_pc_to_db(pc)
 
 
 @app.command()
 def categorize():
-    pc = load_pc()
+    """Re-categorize all transactions."""
+    pc = load_pc_from_db()
     pc = categorize_pipeline(pc)
-    save_pc(pc)
+    save_pc_to_db(pc)
 
 
 if __name__ == "__main__":
