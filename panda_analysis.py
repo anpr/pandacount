@@ -5,7 +5,7 @@ app = marimo.App(width="full")
 
 
 @app.cell
-def __():
+def _():
     # Initiales Importieren. Bevor das getan wird: `./panda.py categorize` ausführen!
     import datetime
     import pandas as pd
@@ -14,11 +14,11 @@ def __():
 
     pc = load_pc_from_db()
     pc = add_cat(pc)
-    return datetime, pd, plt, load_pc_from_db, add_cat, pc
+    return datetime, pc, pd, plt
 
 
 @app.cell
-def __(pc):
+def _(pc):
     # Display column information
     print("Columns in dataset:")
     print(pc.columns)
@@ -26,7 +26,7 @@ def __(pc):
 
 
 @app.cell
-def __(pc, pd):
+def _(pc):
     # Finden von nicht-kategorisierten Abbuchungen auf den Konten 'giro', 'gesa' und 'common' im Jahr 2024
 
     # Kopie des DataFrames erstellen
@@ -50,18 +50,18 @@ def __(pc, pd):
     print(f"Total uncategorized amount: {filtered_df['amount'].sum()}")
 
     uncategorized_transactions = filtered_df
-    return df, cols, filtered_df, uncategorized_transactions
+    return (uncategorized_transactions,)
 
 
 @app.cell
-def __(uncategorized_transactions):
+def _(uncategorized_transactions):
     # Display uncategorized transactions
     uncategorized_transactions
     return
 
 
 @app.cell
-def __(uncategorized_transactions, plt):
+def _(plt, uncategorized_transactions):
     # Innerhalb der nicht-kategorisierten Abbuchungen, kumulative Summe der Top-X Beträge berechnen und plotten
 
     # Calculate the cumulative sum of the amounts
@@ -76,28 +76,28 @@ def __(uncategorized_transactions, plt):
     plt.title('Cumulative Sum of Top-x Uncategorized Expenses')
     plt.grid(True)
     plt.show()
-    return plot_df,
+    return
 
 
 @app.cell
-def __(pc):
+def _(pc):
     # Gesamteinnahmen 2024
     income_df = pc.loc[
         (pc.book_date.dt.year == 2024) &
         (pc['cat'].isin(['einnahmen::gehalt::andreas', 'einnahmen::gehalt::gesa', 'einnahmen::dividende']))
         ]
-    return income_df,
+    return (income_df,)
 
 
 @app.cell
-def __(income_df):
+def _(income_df):
     # Display income data
     income_df
     return
 
 
 @app.cell
-def __(pd):
+def _(pd):
     # Einkommensuebersicht 2024
     def generate_income_overview(income_df: pd.DataFrame) -> pd.DataFrame:
         # Sum by category
@@ -111,20 +111,19 @@ def __(pd):
         overview_df.loc[len(overview_df)] = ['Overall Sum', overall_sum]
 
         return overview_df
-
-    return generate_income_overview,
+    return (generate_income_overview,)
 
 
 @app.cell
-def __(generate_income_overview, income_df):
+def _(generate_income_overview, income_df):
     # Generate the income overview
     income_overview_df = generate_income_overview(income_df)
     income_overview_df
-    return income_overview_df,
+    return
 
 
 @app.cell
-def __(pc):
+def _(pc):
     # Filter für alle Ausgaben im Jahr 2024
     expenses_df = pc.loc[
         (pc.book_date.dt.year == 2024) &  # Nur Buchungen aus dem Jahr 2024
@@ -135,18 +134,18 @@ def __(pc):
         ]
 
     print(f"Total expenses amount: {expenses_df['amount'].sum()}")
-    return expenses_df,
+    return (expenses_df,)
 
 
 @app.cell
-def __(expenses_df):
+def _(expenses_df):
     # Display expenses data
     expenses_df
     return
 
 
 @app.cell
-def __(pd):
+def _(pd):
     # Ausgaben nach Kategorie, Betragstyp und Konto gruppieren
     def generate_expense_overview(expenses_df: pd.DataFrame) -> pd.DataFrame:
         # Replace NaN in 'cat' with 'Uncategorized'
@@ -180,28 +179,27 @@ def __(pd):
         overview_df = pd.concat([overview_df, overall_row], ignore_index=True)
 
         return overview_df
-
-    return generate_expense_overview,
+    return (generate_expense_overview,)
 
 
 @app.cell
-def __(generate_expense_overview, expenses_df):
+def _(expenses_df, generate_expense_overview):
     # Generate the expense overview
     expense_overview_df = generate_expense_overview(expenses_df)
     expense_overview_df
-    return expense_overview_df,
+    return
 
 
 @app.cell
-def __(pc):
+def _(pc):
     # Giro account positive amounts for 2024
     giro_positive_2024 = pc[(pc.account == "giro") & (pc.amount > 0) & (pc.book_date.dt.year == 2024)]
     giro_positive_2024
-    return giro_positive_2024,
+    return
 
 
 @app.cell
-def __(pc):
+def _(pc):
     # Anwaltskosten (Legal costs)
     df_legal = pc
     legal_costs_1 = df_legal[
@@ -210,11 +208,11 @@ def __(pc):
         ]
     print(f"Minimum book date: {df_legal['book_date'].min()}")
     legal_costs_1
-    return df_legal, legal_costs_1,
+    return (df_legal,)
 
 
 @app.cell
-def __(df_legal):
+def _(df_legal):
     # Anwaltskosten #2 (Legal costs #2)
     legal_costs_2 = df_legal[
         df_legal['cat'].str.startswith('anwalt', na=False) |
@@ -222,33 +220,33 @@ def __(df_legal):
         df_legal['party'].str.contains('liu', case=False, na=False)
         ]
     legal_costs_2
-    return legal_costs_2,
+    return
 
 
 @app.cell
-def __(pc, datetime):
+def _(datetime, pc):
     # Alle wohnen::putzen Ausgaben für das Jahr 2023 (All cleaning expenses for 2023)
     df_2023 = pc[(pc.account == 'common') &
                  (pc.book_date > datetime.datetime(2023, 2, 1, 0, 0, 0)) &
                  (pc.book_date < datetime.datetime(2024, 2, 1, 0, 0, 0))]
     cleaning_2023 = df_2023[df_2023['cat'] == 'wohnen::putzen']
     cleaning_2023
-    return df_2023, cleaning_2023,
+    return
 
 
 @app.cell
-def __(pc, datetime):
+def _(datetime, pc):
     # Alle wohnen::putzen Ausgaben für das Jahr 2024 (All cleaning expenses for 2024)
     df_2024 = pc[(pc.account == 'common') &
                  (pc.book_date > datetime.datetime(2024, 2, 1, 0, 0, 0)) &
                  (pc.book_date < datetime.datetime(2025, 2, 1, 0, 0, 0))]
     cleaning_2024 = df_2024[df_2024['cat'] == 'wohnen::putzen']
     cleaning_2024
-    return df_2024, cleaning_2024,
+    return
 
 
 @app.cell
-def __(pc):
+def _(pc):
     # Arbeitszimmer 2024: Darlehenszinsen (Home office 2024: Loan interest)
     loan_payments_2024 = pc[
         (pc.book_date.dt.year == 2024) &
@@ -257,50 +255,116 @@ def __(pc):
         pc.purpose.str.contains('Leistung')
     ]
     loan_payments_2024
-    return loan_payments_2024,
+    return
 
 
 @app.cell
-def __(pc):
+def _(pc):
+    # Arbeitszimmer 2025: Darlehenszinsen
+    loan_payments_2025 = pc[
+        (pc.book_date.dt.year == 2025) &
+        (pc.account == 'common') &
+        (pc.purpose.str.contains('Tilgung', case=False, na=False)) &
+        pc.purpose.str.contains('Leistung')
+    ]
+    loan_payments_2025
+    return
+
+
+@app.cell
+def _(pc):
     # Arbeitszimmer 2024: Stromkosten (Home office 2024: Electricity costs)
     naturstrom_2024 = pc[pc.party.str.contains('Naturstrom', case=False, na=False) & (pc.book_date.dt.year == 2024)]
     electricity_total = naturstrom_2024.amount.sum()
     print(f"Total electricity costs 2024: {electricity_total}")
-    return naturstrom_2024, electricity_total,
+    return
 
 
 @app.cell
-def __(pc):
+def _(pc):
+    # Arbeitszimmer 2025: Stromkosten
+    naturstrom_2025 = pc[pc.party.str.contains('Naturstrom', case=False, na=False) & (pc.book_date.dt.year == 2025)]
+    electricity_total_2025 = naturstrom_2025.amount.sum()
+    print(f"Total electricity costs 2025: {electricity_total_2025}")
+    return
+
+
+@app.cell
+def _(pc):
     # Arbeitszimmer 2024: Hausgeld (Home office 2024: Housing fees)
     wohngeld = pc[(pc.cat=='wohnen::wohngeld') & (pc.book_date.dt.year == 2024)]
     housing_fees_total = wohngeld.amount.sum()
     print(f"Total housing fees 2024: {housing_fees_total}")
-    return wohngeld, housing_fees_total,
+    return
 
 
 @app.cell
-def __(pc):
+def _(pc):
+    # Arbeitszimmer 2025: Hausgeld
+    wohngeld_2025 = pc[(pc.cat=='wohnen::wohngeld') & (pc.book_date.dt.year == 2025)]
+    housing_fees_total_2025 = wohngeld_2025.amount.sum()
+    print(f"Total housing fees 2025: {housing_fees_total_2025}")
+    wohngeld_2025
+    return
+
+
+@app.cell
+def _(pc):
     # Arbeitszimmer 2024: Grundsteuer (Home office 2024: Property tax)
     grundsteuer = pc[(pc.book_date.dt.year == 2024) &
                      (pc.amount < 0) &
                      (pc.purpose.str.contains('Grundst', case=False, na=False))]
     property_tax_total = grundsteuer.amount.sum()
     print(f"Total property tax 2024: {property_tax_total}")
-    return grundsteuer, property_tax_total,
+    return
 
 
 @app.cell
-def __(pc):
+def _(pc):
+    # Arbeitszimmer 2025: Grundsteuer
+    grundsteuer_2025 = pc[(pc.book_date.dt.year == 2025) &
+                     (pc.amount < 0) &
+                     (pc.purpose.str.contains('Grundst', case=False, na=False))]
+    property_tax_total_2025 = grundsteuer_2025.amount.sum()
+    print(f"Total property tax 2025: {property_tax_total_2025}")
+    grundsteuer_2025
+    return
+
+
+@app.cell
+def _(pc):
     # Arbeitszimmer 2024: Telefon Mobil (Home office 2024: Mobile phone)
     # Internet ist auf kontist, und deswegen hier nicht sichtbar
     congstar = pc[(pc.book_date.dt.year == 2024) & (pc.purpose.str.contains('2212684943'))]
     mobile_phone_total = congstar.amount.sum()
     print(f"Total mobile phone costs 2024: {mobile_phone_total}")
-    return congstar, mobile_phone_total,
+    return
 
 
 @app.cell
-def __():
+def _(pc):
+    # Arbeitszimmer 2025: Internet
+    internet_2025 = pc[(pc.book_date.dt.year == 2025) & (pc.party.str.contains('1\+1 Telecom GmbH'))]
+    # Januar bis inklusive April war 1&1 noch auf kontist, danach auf der Ing-Diba.
+    kontist_internet = [-49.99, -50.59, -49.99, -49.99]
+    internet_total_2025 = internet_2025.amount.sum() + sum(kontist_internet)
+    print(f"Total internet cost 2025: {internet_total_2025}")
+    internet_2025
+    return
+
+
+@app.cell
+def _(pc):
+    # Arbeitszimmer 2025: Telefon
+    telefon_2025 = pc[(pc.book_date.dt.year == 2025) & (pc.party.str.contains('fraenk - eine Marke der Telekom Deutschland GmbH'))]
+    telefon_total_2025 = telefon_2025.amount.sum()
+    print(f"Total telefon cost 2025: {telefon_total_2025}")
+    telefon_2025
+    return
+
+
+@app.cell
+def _():
     # Home office summary 2024
     print("=== Home Office Expenses Summary 2024 ===")
     return
