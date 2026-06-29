@@ -50,7 +50,7 @@
 <header>
   <h1>Finanzübersicht – Input für die Finanzberatung</h1>
   <p class="sub">Wohnung, Kredit, laufende Nebenkosten &amp; Versicherungen</p>
-  <p class="meta">Erstellt am 29.06.2026 · Datenbasis: Kontoanalyse (pandacount), 12 Monate Jun 2025 – Mai 2026, sofern nicht anders angegeben.</p>
+  <p class="meta">Erstellt am 29.06.2026 · Datenbasis: Kontoanalyse (pandacount) sowie Steuerberechnung Arbeitszimmer 2025. Wohnposten als Jahreswerte 2025, übrige als rollierende 12 Monate.</p>
 </header>
 
 <!-- 1. KREDIT -->
@@ -94,44 +94,61 @@
 
 <!-- 3. NEBENKOSTEN -->
 <section>
-  <h2><span class="n">3</span> Laufende Nebenkosten <span class="pill">zusätzlich zum Wohngeld</span></h2>
-  <p class="lead">Alles, was wir <strong>neben dem Wohngeld und neben der Kreditrate</strong> für den Haushalt zahlen. Durchschnitt der letzten 12 Monate, Gutschriften herausgerechnet.</p>
+  <h2><span class="n">3</span> Wohnnebenkosten <span class="pill">neben der Kreditrate</span></h2>
+  <p class="lead">Explizite Aufstellung der laufenden Wohn- und Haushaltskosten. Wohnungsbezogene Posten als Jahreswerte aus der Steuerberechnung 2025 (Arbeitszimmer), übrige aus der Kontoanalyse.</p>
   <table>
-    <tr><th>Posten</th><th>Anbieter</th><th class="num">€ / Monat</th><th class="num">€ / Jahr</th></tr>
-    <tr><td>Haushaltshilfe / Reinigung</td><td>Ines Bornemann (ASL Berlin)</td><td class="num">525,57</td><td class="num">6.306,87</td></tr>
-    <tr><td>Strom</td><td>NaturStrom</td><td class="num">80,88</td><td class="num">970,58</td></tr>
-    <tr><td>Grundsteuer</td><td>Finanzamt Charlottenburg</td><td class="num">60,20</td><td class="num">722,36</td></tr>
-    <tr><td>Internet / Festnetz</td><td>1&amp;1 Telecom</td><td class="num">50,16</td><td class="num">601,88</td></tr>
+    <tr><th>Posten</th><th>Anbieter / via</th><th class="num">€ / Monat</th><th class="num">€ / Jahr</th></tr>
+    <tr><td><strong>Hausgeld (Wohngeld)</strong><br><span class="muted" style="font-size:12px">enthält u.&nbsp;a. Heizung, Wasser, Müll, Verwaltung, Instandhaltungsrücklage</span></td><td>WEG Holsteinische Str. 43</td><td class="num">461,62</td><td class="num">5.539,39</td></tr>
+    <tr><td colspan="4" class="muted" style="font-size:12px; padding-top:14px; padding-bottom:2px; border:none">zusätzlich direkt gezahlt:</td></tr>
+    <tr><td>Haushaltshilfe / Reinigung</td><td>Ines Bornemann (ASL)</td><td class="num">525,57</td><td class="num">6.306,87</td></tr>
+    <tr><td>Strom <span class="muted" style="font-size:11px">(netto)</span></td><td>NaturStrom</td><td class="num">89,55</td><td class="num">1.074,60</td></tr>
+    <tr><td>Grundsteuer</td><td>Finanzamt</td><td class="num">60,20</td><td class="num">722,36</td></tr>
+    <tr><td>Internet / Festnetz <span class="muted" style="font-size:11px">(netto)</span></td><td>1&amp;1 Telecom</td><td class="num">45,19</td><td class="num">542,28</td></tr>
     <tr><td>Mobilfunk (2 Verträge)</td><td>congstar + fraenk</td><td class="num">21,55</td><td class="num">258,60</td></tr>
     <tr><td>Rundfunkbeitrag (GEZ)</td><td>ARD/ZDF/Dradio</td><td class="num">18,36</td><td class="num">220,32</td></tr>
-    <tr class="total"><td colspan="2">Summe Nebenkosten</td><td class="num">756,72</td><td class="num">9.080,61</td></tr>
+    <tr class="total"><td colspan="2">Summe ohne Hausgeld</td><td class="num">760,42</td><td class="num">9.125,03</td></tr>
+    <tr class="total"><td colspan="2">Summe inkl. Hausgeld</td><td class="num">1.222,04</td><td class="num">14.664,42</td></tr>
   </table>
-  <p class="note"><strong>Wasser, Heizung &amp; Müll sind <u>nicht</u> separat</strong> – sie laufen über das Wohngeld/Hausgeld der WEG. Nur der Strom wird separat (NaturStrom) bezogen.</p>
-  <p class="note"><strong>Zur Einordnung (nicht in obiger Summe):</strong> Wohngeld/Hausgeld aktuell ca. <strong>464 €/Monat</strong> (2026 leicht gesunken) · Kreditrate <strong>1.010,42 €/Monat</strong> (siehe Punkt&nbsp;1).</p>
+  <p class="note"><strong>Wasser, Heizung &amp; Müll sind nicht separat</strong> – sie sind im Hausgeld der WEG enthalten. Nur Strom wird separat (NaturStrom) bezogen.</p>
+  <p class="muted" style="font-size:12px">Strom, Internet, Hausgeld &amp; Grundsteuer als Werte 2025 aus der Steuerberechnung „Arbeitszimmer 2025" (Strom/Internet netto). Haushaltshilfe, Mobilfunk &amp; GEZ aus der Kontoanalyse (rollierende 12 Monate). Darlehenszinsen 2025 (1.634,37 €) siehe Punkt&nbsp;1.</p>
 </section>
 
 <!-- 4. VERSICHERUNGEN -->
 <section>
   <h2><span class="n">4</span> Versicherungen</h2>
-  <p class="lead">Aktueller Stand. Die Versicherungslandschaft hat sich Mitte 2025 verändert – unten die jeweils <strong>aktuellen</strong> Anbieter.</p>
+  <p class="lead">Aktueller Stand. Die beiden privaten Krankenversicherungen sind separat ausgewiesen.</p>
+
+  <h3 style="font-size:15px; margin:16px 0 4px">Private Krankenversicherung (PKV)</h3>
+  <table>
+    <tr><th>Person</th><th>Anbieter</th><th class="num">€ / Monat</th><th class="num">€ / Jahr</th></tr>
+    <tr><td>Andreas <span class="muted" style="font-size:12px">(Vollversicherung inkl. Pflegepflicht)</span></td><td>ALTE OLDENBURGER</td><td class="num">1.016,82</td><td class="num">12.201,84</td></tr>
+    <tr><td>Gesa <span class="muted" style="font-size:12px">(Beamtin mit Beihilfe – PKV deckt nur den Restanteil)</span></td><td>Debeka</td><td class="num">501,99</td><td class="num">6.023,88</td></tr>
+    <tr class="total"><td colspan="2">Summe PKV</td><td class="num">1.518,81</td><td class="num">18.225,72</td></tr>
+  </table>
+
+  <h3 style="font-size:15px; margin:20px 0 4px">Sonstige Versicherungen</h3>
   <table>
     <tr><th>Versicherung</th><th>Anbieter</th><th class="num">€ / Monat</th><th class="num">€ / Jahr</th></tr>
-    <tr><td>Private Krankenversicherung (PKV)<br><span class="muted" style="font-size:12.5px">inkl. Pflegepflichtvers.</span></td><td>ALTE OLDENBURGER</td><td class="num">1.016,82</td><td class="num">12.201,84</td></tr>
     <tr><td>Kfz-Versicherung</td><td>HUK-COBURG</td><td class="num">28,83</td><td class="num">345,98</td></tr>
     <tr><td>Hausratversicherung</td><td>Getsafe</td><td class="num">11,66</td><td class="num">139,95</td></tr>
     <tr><td>Haftpflichtversicherung</td><td>asspario</td><td class="num">6,30</td><td class="num">75,65</td></tr>
-    <tr class="total"><td colspan="2">Summe Versicherungen</td><td class="num">1.063,61</td><td class="num">12.763,42</td></tr>
+    <tr class="total"><td colspan="2">Summe sonstige</td><td class="num">46,79</td><td class="num">561,58</td></tr>
   </table>
-  <p class="note"><strong>Die PKV dominiert (≈ 96 % der Versicherungskosten).</strong> Beitrag seit Februar 2026 stabil bei 1.016,82 €/Monat (930,06 € Kranken + 85,81 € Pflegepflicht + 0,95 €). Es handelt sich um <strong>eine</strong> private Vollversicherung (eine Person); für die übrigen Familienmitglieder finden sich keine Krankenkassen­buchungen auf diesen Konten (vermutlich gesetzlich/familienversichert).</p>
-  <p class="warn"><strong>Hinweis zur PKV-Cashflow-Logik:</strong> Die ALTE OLDENBURGER erstattet eingereichte Arztrechnungen wieder zurück. Der <em>Beitrag</em> (Kosten) ist 1.016,82 €/Monat; der tatsächliche Netto-Abfluss ist je nach erstatteten Rechnungen geringer.</p>
-  <details style="margin-top:14px">
-    <summary style="cursor:pointer; font-size:13.5px; color:var(--muted)">Veränderungen &amp; Sonderfälle (zum Aufklappen)</summary>
+
+  <table style="margin-top:12px">
+    <tr class="total"><td>Versicherungen gesamt</td><td class="num">1.565,60&nbsp;€/Mon.</td><td class="num">18.787,30&nbsp;€/Jahr</td></tr>
+  </table>
+
+  <p class="warn"><strong>Hinweis PKV-Cashflow:</strong> Beide PKV erstatten eingereichte Behandlungskosten zurück (bei Gesa zusätzlich die Beihilfe als Beamtin). Die genannten Beträge sind die <em>Beiträge</em>; der tatsächliche Netto-Abfluss ist je nach Erstattungen geringer.</p>
+  <p class="muted" style="font-size:12px">Stand: Andreas-PKV bis Jun 2026; Gesa-PKV (Debeka) bis Nov 2025 (ihr Konto ist nur bis dahin eingelesen). Beiträge zuletzt stabil bei 1.016,82 € bzw. 501,99 €/Monat.</p>
+  <details open style="margin-top:14px">
+    <summary style="cursor:pointer; font-size:13.5px; color:var(--muted)">Veränderungen &amp; Sonderfälle</summary>
     <ul style="font-size:13.5px; color:#3a4656; margin:10px 0 0; padding-left:20px">
-      <li><strong>Kranken:</strong> ALTE OLDENBURGER (seit Juli 2025) hat die frühere <em>Debeka</em> (bis Jan 2025) abgelöst.</li>
+      <li><strong>Andreas Kranken:</strong> ALTE OLDENBURGER (seit Juli 2025); Beitrag seit Feb 2026 stabil 1.016,82 € (930,06 Kranken + 85,81 Pflegepflicht + 0,95).</li>
+      <li><strong>Gesa Kranken:</strong> Debeka, konstant 501,99 €/Monat – als Beamtin mit Beihilfe nur der Restkostenanteil.</li>
       <li><strong>Kfz:</strong> HUK-COBURG (1× jährlich 345,98 €) hat <em>CosmosDirekt</em> abgelöst. Die Dez-Abbuchung wurde einmalig zurückgegeben und Anfang Januar erneut eingezogen – es ist <strong>ein</strong> Jahresbeitrag, nicht zwei.</li>
-      <li><strong>Hausrat:</strong> „Getsafe“ ist die Umbenennung von vormals COYA – unverändert 139,95 €/Jahr.</li>
-      <li><strong>Keine</strong> Berufsunfähigkeits-, Rechtsschutz-, Unfall-, Risikolebens- oder Zahnzusatzversicherung in den Konten gefunden. Eine frühere Krankenzusatz (Envivas) ist seit 2024 inaktiv.</li>
-      <li>Die „Alte Leipziger“-Buchung (10.000 € raus / 10.089,57 € rein) war eine ~6-monatige Geldanlage, <strong>keine</strong> Lebensversicherung mit laufendem Beitrag.</li>
+      <li><strong>Hausrat:</strong> „Getsafe" ist die Umbenennung von vormals COYA – unverändert 139,95 €/Jahr.</li>
+      <li><strong>Keine</strong> Berufsunfähigkeits-, Rechtsschutz-, Unfall-, Risikolebens- oder Zahnzusatzversicherung in den Konten gefunden.</li>
     </ul>
   </details>
 </section>
@@ -141,10 +158,10 @@
   <h2 style="border:none"><span class="n" style="background:#fff">∑</span> Gesamtbild Wohnen pro Monat</h2>
   <table>
     <tr><td>Kreditrate (Anschlussfinanzierung)</td><td class="num">1.010,42 €</td></tr>
-    <tr><td>Wohngeld / Hausgeld</td><td class="num">≈ 464,00 €</td></tr>
-    <tr><td>Sonstige Nebenkosten (Strom, Internet, Putzhilfe, Grundsteuer, Mobilfunk, GEZ)</td><td class="num">756,72 €</td></tr>
-    <tr class="total"><td>Wohnen gesamt / Monat</td><td class="num">≈ 2.231 €</td></tr>
-    <tr><td style="padding-top:14px">Versicherungen (v.&nbsp;a. PKV) / Monat</td><td class="num" style="padding-top:14px">1.063,61 €</td></tr>
+    <tr><td>Hausgeld (Wohngeld)</td><td class="num">461,62 €</td></tr>
+    <tr><td>Weitere Nebenkosten (Putzhilfe, Strom, Grundsteuer, Internet, Mobilfunk, GEZ)</td><td class="num">760,42 €</td></tr>
+    <tr class="total"><td>Wohnen gesamt / Monat</td><td class="num">≈ 2.232 €</td></tr>
+    <tr><td style="padding-top:14px">Versicherungen / Monat (PKV Andreas + Gesa + sonstige)</td><td class="num" style="padding-top:14px">1.565,60 €</td></tr>
   </table>
 </section>
 
