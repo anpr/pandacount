@@ -171,7 +171,12 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "Dr.med.Monika Kalus,Dr.med.Jorrit Brunnemann",
             ],
         },
-        "handy": {"party": ["congstar - eine Marke der Telekom Deutschland GmbH"]},
+        "handy": {
+            "party": [
+                "congstar - eine Marke der Telekom Deutschland GmbH",
+                "fraenk - eine Marke der Telekom Deutschland GmbH",
+            ]
+        },
         "kleidung": {
             "party": [
                 "VISA MAGAZZINO",
@@ -291,7 +296,6 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
                 "VISA ESSO STATION",
                 "VISA ARAL TANKSTELLE 286077",
             ],
-            "purpose": ["CosmosDirekt Kfz Beitrag"],
         },
         "mobilitaet::autoleihen": {
             "party": [
@@ -433,14 +437,28 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
         "versicherung::haftpflicht": {
             "party": ["asspario Versicherungsdienst AG", "ASSPARIO GmbH"]
         },
+        "versicherung::kfz": {
+            "party": ["HUK-COBURG UNTERNEHMENSGRUPPE"],
+            "purpose": ["CosmosDirekt Kfz Beitrag"],
+        },
         "versicherung::hausratversichterung": {
-            "party": ["COYA Hausrat", "Getsafe Digital GmbH"],
+            "party": [
+                "COYA Hausrat",
+                "Getsafe Digital GmbH",
+                "GC RE GETSAFE DIGITAL GMBH",
+                "GC re Getsafe Digital GmbH",
+                "GC re Coya",
+                "GETSAFE",
+            ],
             "purpose": ["COYA Hausrat"],
         },
+        "gesundheit::krankenversicherung": {"party": ["ALTE OLDENBURGER Krankenversicherung AG"]},
+        "gesundheit::krankenzusatz": {"party": ["Envivas Krankenversicherung AG"]},
         "wohnen": {"purpose": ["Rate, Putzen, Naturstrom", "Ausgleich WEG"]},
         "wohnen::grundsteuer": {"purpose": ["STEUERNR 024/749/07849 GRUNDST"]},
         "wohnen::GEZ": {"party": ["Rundfunk ARD, ZDF, DRadio"]},
         "wohnen::strom": {"party": ["NaturStromHandel GmbH"]},
+        "wohnen::internet": {"party": ["1+1 Telecom GmbH"]},
         "wohnen::putzen": {"party": ["INES BORNEMANN"]},
         "wohnen::rate": {"purpose": ["Rechnung Darl.-Leistung 6070166475"]},
         "wohnen::wohngeld": {"party": ["WEG Holsteinische Strase 43 in 10717 Berlin"]},
@@ -555,7 +573,9 @@ def generate_fingerprint(row: pd.Series) -> str:
     """
     # Convert date to ISO string for consistency
     book_date_str = row["book_date"].strftime("%Y-%m-%d") if pd.notna(row["book_date"]) else ""
-    valuta_date_str = row["valuta_date"].strftime("%Y-%m-%d") if pd.notna(row["valuta_date"]) else ""
+    valuta_date_str = (
+        row["valuta_date"].strftime("%Y-%m-%d") if pd.notna(row["valuta_date"]) else ""
+    )
 
     # Handle None/NaN values consistently
     account = str(row["account"]) if pd.notna(row["account"]) else ""
@@ -565,7 +585,9 @@ def generate_fingerprint(row: pd.Series) -> str:
     amount_cents = str(row["amount_cents"]) if pd.notna(row["amount_cents"]) else "0"
 
     # Combine all fields with separator
-    combined = f"{account}|{book_date_str}|{valuta_date_str}|{party}|{book_text}|{purpose}|{amount_cents}"
+    combined = (
+        f"{account}|{book_date_str}|{valuta_date_str}|{party}|{book_text}|{purpose}|{amount_cents}"
+    )
 
     # Generate SHA256 hash
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
@@ -573,7 +595,8 @@ def generate_fingerprint(row: pd.Series) -> str:
 
 def create_tables(con: duckdb.DuckDBPyConnection):
     """Create the database schema if it doesn't exist."""
-    con.execute("""
+    con.execute(
+        """
         CREATE TABLE IF NOT EXISTS transactions (
             transaction_id INTEGER PRIMARY KEY,
             account TEXT NOT NULL,
@@ -590,7 +613,8 @@ def create_tables(con: duckdb.DuckDBPyConnection):
             fingerprint TEXT NOT NULL UNIQUE,
             imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-    """)
+    """
+    )
 
 
 def load_pc_from_db() -> pd.DataFrame:
@@ -605,7 +629,8 @@ def load_pc_from_db() -> pd.DataFrame:
 
     con = duckdb.connect(str(db_path))
     try:
-        df = con.execute("""
+        df = con.execute(
+            """
             SELECT
                 account,
                 book_date,
@@ -620,7 +645,8 @@ def load_pc_from_db() -> pd.DataFrame:
                 category_manual
             FROM transactions
             ORDER BY book_date, account, valuta_date, party, purpose
-        """).df()
+        """
+        ).df()
 
         # Convert cents back to decimal amounts
         df["amount"] = df["amount_cents"] / 100.0
@@ -656,31 +682,36 @@ def save_pc_to_db(pc: pd.DataFrame):
         pc_insert["fingerprint"] = pc_insert.apply(generate_fingerprint, axis=1)
 
         # Get next available transaction_id
-        max_id_result = con.execute("SELECT COALESCE(MAX(transaction_id), 0) FROM transactions").fetchone()
+        max_id_result = con.execute(
+            "SELECT COALESCE(MAX(transaction_id), 0) FROM transactions"
+        ).fetchone()
         next_id = max_id_result[0] + 1 if max_id_result else 1
 
         # Assign transaction_ids (these will be used for new rows only)
         pc_insert["transaction_id"] = range(next_id, next_id + len(pc_insert))
 
         # Select columns for insertion
-        pc_insert = pc_insert[[
-            "transaction_id",
-            "account",
-            "book_date",
-            "valuta_date",
-            "party",
-            "book_text",
-            "purpose",
-            "amount_cents",
-            "balance_cents",
-            "transfer_category",
-            "category",
-            "category_manual",
-            "fingerprint"
-        ]]
+        pc_insert = pc_insert[
+            [
+                "transaction_id",
+                "account",
+                "book_date",
+                "valuta_date",
+                "party",
+                "book_text",
+                "purpose",
+                "amount_cents",
+                "balance_cents",
+                "transfer_category",
+                "category",
+                "category_manual",
+                "fingerprint",
+            ]
+        ]
 
         # Upsert using INSERT ON CONFLICT
-        con.execute("""
+        con.execute(
+            """
             INSERT INTO transactions (
                 transaction_id, account, book_date, valuta_date,
                 party, book_text, purpose, amount_cents, balance_cents,
@@ -693,7 +724,8 @@ def save_pc_to_db(pc: pd.DataFrame):
                 category = EXCLUDED.category,
                 category_manual = EXCLUDED.category_manual,
                 balance_cents = EXCLUDED.balance_cents
-        """)
+        """
+        )
 
         row_count = con.execute("SELECT COUNT(*) FROM transactions").fetchone()[0]
         print(f"\nStored pandacount.duckdb with {row_count} rows in total")
