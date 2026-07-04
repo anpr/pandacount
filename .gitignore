@@ -5,3 +5,4 @@ pandacount.yml
 pandacount-*.yml
 pandacount.duckdb.wal
 settings.local.json
+.superpowers/
