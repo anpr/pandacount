@@ -24,6 +24,7 @@ flake8 = "7.1.1"
 ipython = "8.30.0"
 isort = "5.13.2"
 mypy = "1.13.0"
+pytest = "^8.3"
 toolz = "1.0.0"
 
 [build-system]
