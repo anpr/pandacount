@@ -9,6 +9,8 @@ import pandas as pd
 import typer
 from toolz import pipe
 
+from rules import apply_rules, load_rules
+
 
 from contextlib import contextmanager
 
@@ -461,31 +463,10 @@ CATEGORY_RULES_MAP: dict[str, dict] = {
 }
 
 
-def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
-    """Sets category column of dataframe."""
-    for category, subs_map in CATEGORY_RULES_MAP.items():
-        for attribute, subs in subs_map.items():
-            # This is to avoid the mistake that subs is just a string.
-            assert isinstance(subs, list)
-            for sub_item in subs:
-                if isinstance(sub_item, str):
-                    sub = sub_item
-                    df.loc[
-                        df[attribute].fillna("").str.lower().str.contains(sub.lower(), regex=False),
-                        "category",
-                    ] = category
-                elif isinstance(sub_item, tuple):
-                    account, sub = sub_item
-                    df.loc[
-                        (
-                            df[attribute]
-                            .fillna("")
-                            .str.lower()
-                            .str.contains(sub.lower(), regex=False)
-                        )
-                        & (df.account == account),
-                        "category",
-                    ] = category
+def apply_special_rules(df: pd.DataFrame) -> pd.DataFrame:
+    """Sets category column for the conditional special cases that can't be expressed
+    as plain substring rules (amount thresholds, book_text equality, combined
+    account/party conditions)."""
     df.loc[
         (df.party.fillna("").str.lower().str.contains("VISA APPLE.COM/BILL".lower(), regex=False))
         & (df.amount > -50),
@@ -522,6 +503,43 @@ def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
     ] = "einnahmen::steuererstattung"
 
     return df
+
+
+def categorize_df_legacy(df: pd.DataFrame) -> pd.DataFrame:
+    """Sets category column of dataframe (Dict-Loop, Regressions-Orakel).
+
+    Legacy path kept only as a regression oracle for the new rules.yml-based
+    categorize_df; will be deleted once the taxonomy migration (Task 5) lands.
+    """
+    for category, subs_map in CATEGORY_RULES_MAP.items():
+        for attribute, subs in subs_map.items():
+            # This is to avoid the mistake that subs is just a string.
+            assert isinstance(subs, list)
+            for sub_item in subs:
+                if isinstance(sub_item, str):
+                    sub = sub_item
+                    df.loc[
+                        df[attribute].fillna("").str.lower().str.contains(sub.lower(), regex=False),
+                        "category",
+                    ] = category
+                elif isinstance(sub_item, tuple):
+                    account, sub = sub_item
+                    df.loc[
+                        (
+                            df[attribute]
+                            .fillna("")
+                            .str.lower()
+                            .str.contains(sub.lower(), regex=False)
+                        )
+                        & (df.account == account),
+                        "category",
+                    ] = category
+    return apply_special_rules(df)
+
+
+def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
+    """Setzt category anhand rules.yml + Python-Spezialregeln."""
+    return apply_special_rules(apply_rules(df, load_rules()))
 
 
 def transfer_categorize(df: pd.DataFrame) -> pd.DataFrame:
@@ -758,7 +776,8 @@ def ing_import(file_list: list[str]):
         typer.echo(f"Processing {file_name}")
         df = to_raw_df(file_name)
         print(
-            f"  Importing dataframe with {df.shape[0]} rows (pandacount currently has {pc.shape[0]} rows)..."
+            f"  Importing dataframe with {df.shape[0]} rows "
+            f"(pandacount currently has {pc.shape[0]} rows)..."
         )
         pc = import_to_pandacount(pc, df)
 
