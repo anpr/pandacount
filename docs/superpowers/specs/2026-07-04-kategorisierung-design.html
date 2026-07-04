@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design: Transaktions-Kategorisierung pandacount</title>
+<style>
+  :root {
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --border: rgba(11,11,11,0.10);
+    --new: #2a78d6;        /* Blau  = neu */
+    --changed: #b87d00;    /* Gelb-Ton für Text-Badges (lesbar auf hell) */
+    --changed-bg: #fdf3dd;
+    --new-bg: #e9f1fc;
+    --same-bg: #f1f0ec;
+    --code-key: #1c5cab;
+    --seq-1: #86b6ef; --seq-2: #5598e7; --seq-3: #2a78d6; --seq-4: #1c5cab;
+    --seq-ink-on-light: #0b0b0b;
+    --seq-ink-on-dark: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --border: rgba(255,255,255,0.12);
+      --new: #3987e5;
+      --changed: #eda100;
+      --changed-bg: #33270a;
+      --new-bg: #12233a;
+      --same-bg: #262624;
+      --code-key: #6da7ec;
+      --seq-1: #9ec5f4; --seq-2: #6da7ec; --seq-3: #3987e5; --seq-4: #256abf;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 0 0 6px; }
+  h2 { font-size: 19px; margin: 44px 0 12px; padding-top: 20px; border-top: 1px solid var(--grid); }
+  h2 .num { color: var(--muted); font-weight: 600; margin-right: 8px; }
+  p { margin: 8px 0; color: var(--ink-2); }
+  strong { color: var(--ink); }
+  .sub { color: var(--muted); font-size: 13px; }
+  code, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; }
+  code { background: var(--same-bg); padding: 1px 5px; border-radius: 4px; }
+
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .02em;
+    padding: 2px 8px; border-radius: 999px; vertical-align: middle;
+  }
+  .badge.new     { color: var(--new); background: var(--new-bg); }
+  .badge.changed { color: var(--changed); background: var(--changed-bg); }
+  .badge.same    { color: var(--ink-2); background: var(--same-bg); }
+  .badge.status  { color: var(--changed); background: var(--changed-bg); }
+
+  .legend-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 14px 0 4px; font-size: 13px; color: var(--ink-2); }
+
+  /* ---------- KPI tiles ---------- */
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 16px 0; }
+  .tile {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .tile .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .tile .value { font-size: 30px; font-weight: 650; margin: 2px 0; }
+  .tile .detail { font-size: 13px; color: var(--ink-2); }
+
+  /* ---------- stacked bars ---------- */
+  .chart {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 18px 14px; margin: 16px 0;
+  }
+  .chart h3 { margin: 0 0 2px; font-size: 15px; }
+  .chart .sub { margin-bottom: 14px; }
+  .bar-label { font-size: 13px; color: var(--ink-2); margin: 10px 0 4px; }
+  .bar { display: flex; height: 34px; border-radius: 5px; overflow: hidden; }
+  .bar .seg {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden;
+    margin-right: 2px; min-width: 0;
+  }
+  .bar .seg:last-child { margin-right: 0; }
+  .s1 { background: var(--seq-1); color: var(--seq-ink-on-light); }
+  .s2 { background: var(--seq-2); color: var(--seq-ink-on-light); }
+  .s3 { background: var(--seq-3); color: var(--seq-ink-on-dark); }
+  .s4 { background: var(--seq-4); color: var(--seq-ink-on-dark); }
+  @media (prefers-color-scheme: dark) {
+    .s2 { color: #0b0b0b; } .s3 { color: #0b0b0b; }
+  }
+  .chart .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; font-size: 12px; color: var(--ink-2); }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .takeaway { font-size: 13px; color: var(--ink-2); margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--grid); }
+
+  /* ---------- pipeline ---------- */
+  .pipeline { display: grid; grid-template-columns: 1fr 250px; gap: 16px; margin: 16px 0; }
+  @media (max-width: 720px) { .pipeline { grid-template-columns: 1fr; } }
+  .flow { display: flex; flex-direction: column; }
+  .node {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; position: relative;
+  }
+  .node.new  { border-left: 3px solid var(--new); }
+  .node.changed { border-left: 3px solid var(--changed); }
+  .node .t { font-weight: 600; font-size: 14px; }
+  .node .d { font-size: 12.5px; color: var(--ink-2); }
+  .arrow { text-align: center; color: var(--muted); font-size: 15px; line-height: 1; padding: 3px 0; }
+  .arrow .lbl { font-size: 11.5px; margin-left: 6px; vertical-align: 2px; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sidebox {
+    border: 1.5px dashed var(--new); border-radius: 10px; padding: 12px 14px;
+    align-self: start; background: var(--new-bg);
+  }
+  .sidebox .t { font-weight: 650; font-size: 14px; }
+  .sidebox p { font-size: 12.5px; margin: 6px 0; }
+  .sidebox .out { font-size: 12.5px; color: var(--ink); margin-top: 8px; }
+
+  /* ---------- taxonomy ---------- */
+  .tax-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 14px 0; }
+  .tax {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .tax .name { font-weight: 650; font-size: 13.5px; }
+  .tax .ex { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .tax .note { font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+  .tax-foot { font-size: 13px; color: var(--ink-2); }
+
+  /* ---------- code ---------- */
+  pre {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.5;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink-2);
+  }
+  pre .k { color: var(--code-key); }
+  pre .c { color: var(--muted); font-style: italic; }
+  pre .s { color: var(--ink); }
+
+  /* ---------- stepper ---------- */
+  .steps { margin: 16px 0; display: flex; flex-direction: column; gap: 0; }
+  .step { display: flex; gap: 14px; }
+  .step .n {
+    flex: none; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--new); color: #fff; font-weight: 650; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step .line { flex: none; width: 28px; display: flex; justify-content: center; }
+  .step .line::before { content: ""; width: 2px; background: var(--grid); flex: 1; }
+  .step .body { padding-bottom: 18px; }
+  .step .t { font-weight: 600; }
+  .step .d { font-size: 13.5px; color: var(--ink-2); }
+
+  /* ---------- tables ---------- */
+  .tblwrap { overflow-x: auto; margin: 14px 0; }
+  table { border-collapse: collapse; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; font-size: 13.5px; }
+  th, td { padding: 7px 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--grid); }
+  td:first-child, th:first-child { text-align: left; }
+  tbody tr + tr td { border-top: 1px solid var(--grid); }
+  tr.dim td { color: var(--muted); }
+  tr.total td { font-weight: 650; border-top: 2px solid var(--grid); }
+
+  ol.mig { padding-left: 22px; color: var(--ink-2); }
+  ol.mig li { margin-bottom: 10px; }
+  ol.mig .v { display: block; font-size: 12.5px; color: var(--muted); }
+  ul.compact { color: var(--ink-2); padding-left: 20px; }
+  ul.compact li { margin-bottom: 4px; }
+
+  .callout {
+    border-left: 3px solid var(--new); background: var(--surface);
+    border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 14px 0;
+    font-size: 13.5px; color: var(--ink-2);
+  }
+  footer { margin-top: 50px; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--grid); padding-top: 14px; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Nachhaltige Transaktions-Kategorisierung</h1>
+<p class="sub">Design-Spec · pandacount · 2026-07-04 · <span class="badge status">Entwurf — wartet auf Review</span></p>
+
+<p><strong>Ziel:</strong> Jährliche und monatliche Ein-/Ausgaben-Übersicht für 2024 &amp; 2025 —
+und ein Workflow, der <em>dauerhaft</em> funktioniert, weil jede Kategorisierungs-Session
+wiederverwendbares Regelwissen erzeugt statt einmaliger Zuordnungen.</p>
+
+<div class="legend-row">
+  <span>Farbcode auf dieser Seite:</span>
+  <span class="badge new">neu</span>
+  <span class="badge changed">umgebaut</span>
+  <span class="badge same">unverändert</span>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="num">1</span>Ausgangslage</h2>
+
+<div class="kpi-row">
+  <div class="tile">
+    <div class="label">2024 unkategorisiert</div>
+    <div class="value">41%</div>
+    <div class="detail">1.212 von 2.966 Transaktionen</div>
+  </div>
+  <div class="tile">
+    <div class="label">2024 Ausgabenvolumen offen</div>
+    <div class="value">−36,8k&nbsp;€</div>
+    <div class="detail">unkategorisierte Abbuchungen</div>
+  </div>
+  <div class="tile">
+    <div class="label">2025 unkategorisiert</div>
+    <div class="value">51%</div>
+    <div class="detail">1.618 von 3.200 Transaktionen</div>
+  </div>
+  <div class="tile">
+    <div class="label">2025 Ausgabenvolumen offen</div>
+    <div class="value">−114,4k&nbsp;€</div>
+    <div class="detail">inkl. Sonderposten (WEG −22,2k)</div>
+  </div>
+</div>
+
+<div class="chart">
+  <h3>Das Power-Law-Problem</h3>
+  <p class="sub">Unkategorisierte Transaktionen 2024/25, gruppiert nach Häufigkeit der Party (dunkler&nbsp;= häufiger)</p>
+
+  <div class="bar-label">≈ 1.030 Parties&nbsp;— wer taucht wie oft auf?</div>
+  <div class="bar" role="img" aria-label="Parties nach Häufigkeit: 66% einmalig, 23% zwei- bis dreimal, 7% vier- bis zehnmal, 4% öfter als zehnmal">
+    <div class="seg s1" style="width:66.3%" title="683 Parties mit genau 1 Transaktion">1× — 683 Parties (66%)</div>
+    <div class="seg s2" style="width:22.6%" title="233 Parties mit 2–3 Transaktionen">2–3× (23%)</div>
+    <div class="seg s3" style="width:7.5%" title="77 Parties mit 4–10 Transaktionen"></div>
+    <div class="seg s4" style="width:3.6%" title="37 Parties mit über 10 Transaktionen"></div>
+  </div>
+
+  <div class="bar-label">2.830 Transaktionen&nbsp;— wer verursacht sie?</div>
+  <div class="bar" role="img" aria-label="Transaktionen nach Party-Häufigkeit: 24% von Einmal-Parties, 18% von zwei- bis dreimaligen, 15% von vier- bis zehnmaligen, 43% von Parties mit über zehn Transaktionen">
+    <div class="seg s1" style="width:24.1%" title="683 Transaktionen von Einmal-Parties">1× (24%)</div>
+    <div class="seg s2" style="width:18.0%" title="508 Transaktionen">2–3× (18%)</div>
+    <div class="seg s3" style="width:15.1%" title="426 Transaktionen">4–10× (15%)</div>
+    <div class="seg s4" style="width:42.9%" title="1.213 Transaktionen von nur 37 Parties">&gt;10× — 1.213 Txn (43%)</div>
+  </div>
+
+  <div class="legend">
+    <span><span class="sw" style="background:var(--seq-1)"></span>1×</span>
+    <span><span class="sw" style="background:var(--seq-2)"></span>2–3×</span>
+    <span><span class="sw" style="background:var(--seq-3)"></span>4–10×</span>
+    <span><span class="sw" style="background:var(--seq-4)"></span>&gt;10×</span>
+  </div>
+
+  <div class="takeaway"><strong>Konsequenz:</strong> Nur 37 Parties (&gt;10×) verursachen 43% der
+  Transaktionen — <em>dafür lohnen sich Regeln</em>. 683 Parties tauchen genau einmal auf —
+  <em>dafür sind Regeln strukturell chancenlos</em>; dort braucht es Mensch + Claude oder den
+  bewussten <code>sonstiges</code>-Eimer.</div>
+</div>
+
+<ul class="compact">
+  <li><strong>Quick Wins per Regel:</strong> Mayple Tech (+94,7k, Gehalt Andreas), Ikano Bank (~+101k), WEG Holsteinische (−22,2k) — wenige Regeln erledigen den Großteil des <em>Volumens</em>.</li>
+  <li><strong>PayPal-Sonderfall:</strong> 213 Transaktionen; der echte Händler steht zerhackt im <code>purpose</code> (<code>"Ihr Ei nkauf bei ETSY I RELAND"</code>).</li>
+  <li><strong><code>category_manual</code></strong> existiert, wurde aber nur 115× benutzt — es fehlte ein Werkzeug.</li>
+  <li><strong>Datenlücke:</strong> Gesa-Konto nur bis 30.11.2025 exportiert.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2><span class="num">2</span>Entscheidungen aus dem Brainstorming</h2>
+<ul class="compact">
+  <li><strong>Zielgenauigkeit:</strong> volumen-orientiert — ~95–98% des Ausgabenvolumens; der Rest läuft bewusst als <code>(unkategorisiert)</code>.</li>
+  <li><strong>LLM-Einsatz:</strong> kein API-Batch. Claude Code arbeitet <strong>interaktiv in Sessions</strong> — liest DB, schlägt vor, Andreas bestätigt, Claude schreibt.</li>
+  <li><strong>Taxonomie:</strong> gezielt aufräumen — feste Top-Level-Liste, Migration per Mapping.</li>
+  <li><strong>Rhythmus:</strong> quartalsweise / ad-hoc.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2><span class="num">3</span>Architektur: die Pipeline</h2>
+<p>Kernidee: <strong>Logik im Code, Regeln als Daten.</strong> Das 380-Zeilen-Dict in
+<code>panda.py</code> wird eine YAML-Datei; ein neuer Normalisierungsschritt macht den Long Tail
+überhaupt erst regelfähig.</p>
+
+<div class="pipeline">
+  <div class="flow">
+    <div class="node"><span class="t">CSV-Exporte <span class="badge same">unverändert</span></span>
+      <div class="d"><code>downloads/</code> · ING, ISO-8859-1, 5 Konten per IBAN</div></div>
+    <div class="arrow">↓<span class="lbl mono">ing-import (Fingerprint-Dedupe)</span></div>
+    <div class="node"><span class="t">DuckDB <code>transactions</code> <span class="badge same">unverändert</span></span>
+      <div class="d">Schema bleibt; <code>category_manual</code> überlebt jeden Re-Import</div></div>
+    <div class="arrow">↓</div>
+    <div class="node new"><span class="t">Normalisierung <span class="badge new">neu</span></span>
+      <div class="d">abgeleitete Spalten <code>party_norm</code> + <code>merchant</code>: Whitespace-Reparatur,
+      <code>VISA&nbsp;</code>-Präfix strippen, PayPal-/Amazon-Händler aus <code>purpose</code> extrahieren</div></div>
+    <div class="arrow">↓</div>
+    <div class="split">
+      <div class="node new"><span class="t"><code>rules.yml</code> <span class="badge new">neu</span></span>
+        <div class="d">deklarative Regeln, git-versioniert; Semantik wie heute (Substring, case-insensitiv, letzte Regel gewinnt)</div></div>
+      <div class="node changed"><span class="t">Python-Escape-Hatch <span class="badge changed">umgebaut</span></span>
+        <div class="d">die 4 konditionalen Sonderfälle bleiben echte Python-Funktionen — bewusst <em>kein</em> eigenes DSL</div></div>
+    </div>
+    <div class="arrow">↓<span class="lbl">schreibt <code>category</code>; <code>category_manual</code> gewinnt immer&nbsp;→ <code>cat</code></span></div>
+    <div class="node changed"><span class="t">marimo-Auswertung <span class="badge changed">erweitert</span></span>
+      <div class="d">Jahresübersicht + Monatsmatrix + Datenstand-Warnung (Abschnitt 6)</div></div>
+  </div>
+
+  <div class="sidebox">
+    <div class="t">Claude-Session <span class="badge new">neu</span></div>
+    <p>quartalsweise, als Projekt-Skill (Abschnitt 5)</p>
+    <div class="out">schreibt ⟶ <code>rules.yml</code><br>
+    <span class="sub">(wiederkehrende Parties)</span></div>
+    <div class="out">schreibt ⟶ <code>category_manual</code><br>
+    <span class="sub">(Einzelfälle, fingerprint-stabil)</span></div>
+    <p style="margin-top:10px">Nie ohne Bestätigung — aber Bestätigung in Batches, nicht pro Transaktion.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="num">4</span>Taxonomie: 13 feste Top-Level</h2>
+<p>Geschlossene Top-Level-Liste (Erweiterung nur per bewusster Entscheidung; die YAML-Validierung
+erzwingt sie). Zweite/dritte Ebene frei, Trenner bleibt <code>::</code>. Die Top-Level-Ebene ist
+die Granularität der Übersicht. <strong>Person nur noch als Sub-Ebene</strong>
+(<code>einnahmen::gehalt::gesa</code>, <code>arbeit::gesa::…</code>) — kein <code>gesa::*</code>-Top-Level mehr.</p>
+
+<div class="tax-grid">
+  <div class="tax"><div class="name">einnahmen <span class="badge changed">umgebaut</span></div>
+    <div class="ex">gehalt::andreas · gehalt::gesa · dividende · zinsen · steuererstattung</div>
+    <div class="note">+ kindergeld (war <code>kinder::</code> — ist Einnahme)</div></div>
+  <div class="tax"><div class="name">wohnen <span class="badge changed">umgebaut</span></div>
+    <div class="ex">rate · wohngeld · strom · internet · putzen · gez · grundsteuer</div>
+    <div class="note">+ moebel (war Top-Level)</div></div>
+  <div class="tax"><div class="name">einkaufen <span class="badge same">unverändert</span></div>
+    <div class="ex">Lebensmittel &amp; Drogerie</div></div>
+  <div class="tax"><div class="name">kinder <span class="badge changed">umgebaut</span></div>
+    <div class="ex">kleidung · sport · reiten · schule-kita · musik · betreuung</div>
+    <div class="note">− kindergeld, − sparen</div></div>
+  <div class="tax"><div class="name">mobilitaet <span class="badge changed">umgebaut</span></div>
+    <div class="ex">auto · bahn · oepnv · fliegen · fahrrad · mietwagen · faehre</div>
+    <div class="note">autoleihen→mietwagen, db/oebb→bahn</div></div>
+  <div class="tax"><div class="name">gesundheit <span class="badge changed">umgebaut</span></div>
+    <div class="ex">pkv-andreas · pkv-gesa · vorleistung · apotheke · zusatz</div>
+    <div class="note">debeka etc. → sprechende Namen</div></div>
+  <div class="tax"><div class="name">versicherung <span class="badge changed">umgebaut</span></div>
+    <div class="ex">haftpflicht · kfz · hausrat</div>
+    <div class="note">Tippfehler „hausratversichterung“ behoben</div></div>
+  <div class="tax"><div class="name">freizeit <span class="badge changed">umgebaut</span></div>
+    <div class="ex">restaurant · media · buch · konzert · sport</div>
+    <div class="note">restaurant + media waren Top-Level</div></div>
+  <div class="tax"><div class="name">urlaub <span class="badge same">unverändert</span></div>
+    <div class="ex">unterkunft · einkaufen · freizeit · transport</div></div>
+  <div class="tax"><div class="name">arbeit <span class="badge new">neu</span></div>
+    <div class="ex">andreas::konferenz · gesa::software · gesa::dienstreise</div>
+    <div class="note">ersetzt <code>gesa::arbeit</code>, <code>konferenz</code></div></div>
+  <div class="tax"><div class="name">persoenlich <span class="badge new">neu</span></div>
+    <div class="ex">kleidung · friseur · handy · geschenke</div>
+    <div class="note">sammelt bisherige Top-Level</div></div>
+  <div class="tax"><div class="name">finanzen <span class="badge new">neu</span></div>
+    <div class="ex">bargeld · anwalt · spenden · mitgliedsbeitraege · gebuehren</div>
+    <div class="note">sammelt Verstreutes (inkl. justetf)</div></div>
+  <div class="tax"><div class="name">sparen <span class="badge new">neu</span></div>
+    <div class="ex">depot-paula · rente-gesa · wertpapierkauf</div>
+    <div class="note">Sparen ist kein Konsum — eigener Block in der Auswertung</div></div>
+</div>
+
+<p class="tax-foot">Außerhalb der Ausgaben-Sicht: <code>intern</code> und <code>transfer_category</code>
+bleiben wie heute (ausgeschlossen); <code>sonstiges</code> ist der explizite Auffang-Eimer für den
+bewusst ignorierten Long Tail.<br>
+<strong>Migration:</strong> einmalige Mapping-Tabelle alt→neu (z.B. <code>geschenk</code> →
+<code>persoenlich::geschenke</code>), angewendet auf Regeldatei <em>und</em> alle
+<code>category_manual</code>-Werte. Details der Sub-Kategorien werden beim Umsetzen feinjustiert.</p>
+
+<!-- ============================================================ -->
+<h2><span class="num">5</span>Regelwerk &amp; Quartals-Workflow</h2>
+
+<pre><span class="c"># rules.yml — Semantik exakt wie heute: case-insensitives Substring-Matching</span>
+- <span class="k">category</span>: <span class="s">freizeit::media</span>
+  <span class="k">match</span>:
+    <span class="k">party</span>:   [<span class="s">"amznprime"</span>, <span class="s">"prime video"</span>]
+    <span class="k">purpose</span>: [<span class="s">"Spotify AB"</span>, <span class="s">"netflix.com"</span>]
+
+- <span class="k">category</span>: <span class="s">freizeit::media</span>       <span class="c"># Sonderfall wird Feld statt Code</span>
+  <span class="k">match</span>: {<span class="k">party</span>: [<span class="s">"VISA APPLE.COM/BILL"</span>]}
+  <span class="k">amount_min</span>: -50
+
+- <span class="k">category</span>: <span class="s">einnahmen::gehalt::gesa</span>
+  <span class="k">match</span>: {<span class="k">book_text</span>: [<span class="s">"Gehalt/Rente"</span>]}
+  <span class="k">account</span>: <span class="s">gesa</span>
+
+- <span class="k">category</span>: <span class="s">einkaufen</span>              <span class="c"># dank Normalisierung: matcht PayPal-Händler</span>
+  <span class="k">match</span>: {<span class="k">merchant</span>: [<span class="s">"Flink SE"</span>, <span class="s">"Sunday Natural"</span>]}</pre>
+
+<p><strong>Warum Daten statt Code:</strong> Sessions ergänzen Regeln ohne Python-Edit;
+<code>git diff rules.yml</code> zeigt pro Session sauber, was dazukam; ein Tippfehler bricht
+nicht das Skript (Validierung beim Laden). <strong>Offener Punkt</strong> (Andreas): falls die
+Python-Sonderfälle wuchern, DSL-Frage neu bewerten — Startpunkt ist bewusst
+YAML&nbsp;+&nbsp;Python-Escape-Hatch, kein eigenes Mini-DSL.</p>
+
+<p style="margin-top:18px"><strong>Der Quartals-Workflow</strong> — dokumentiert als Claude-Code-Skill
+(<code>.claude/skills/kategorisieren/SKILL.md</code>), damit jede Session gleich abläuft:</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="n">1</div>
+    <div class="body"><div class="t">Datenlage prüfen</div>
+      <div class="d">Neueste CSVs pro IBAN in <code>downloads/</code> vs. letztes Buchungsdatum pro Konto in der DB → Claude sagt, welche Exporte fehlen (das Gesa-Nov-2025-Problem). Dann Import + <code>categorize</code>.</div></div>
+  </div>
+  <div class="step">
+    <div class="n">2</div>
+    <div class="body"><div class="t">Kopf zuerst: Regeln</div>
+      <div class="d">Unkategorisiertes gruppiert nach <code>merchant</code>/<code>party_norm</code>, absteigend nach |Volumen|. Für alles ≥2 Vorkommen oder ≥ Schwellwert schlägt Claude <strong>Regeln</strong> vor, in Batches von ~10. Andreas bestätigt/korrigiert → <code>rules.yml</code> + <code>categorize</code>.</div></div>
+  </div>
+  <div class="step">
+    <div class="n">3</div>
+    <div class="body"><div class="t">Einzelfälle: Mensch in der Schleife</div>
+      <div class="d">Für große Einzeltransaktionen schlägt Claude <code>category_manual</code> vor. Was aus den Daten nicht erschließbar ist („Tim Leers −12.500&nbsp;€“), fragt Claude direkt.</div></div>
+  </div>
+  <div class="step">
+    <div class="n">4</div>
+    <div class="body"><div class="t">Abschluss mit Messwert</div>
+      <div class="d">„Unkategorisiert: X&nbsp;€ = Y% des Ausgabenvolumens“ pro Jahr. Unter der Schwelle (~2–5%) ist die Session fertig; der Rest bleibt <code>NULL</code> und erscheint ehrlich als <code>(unkategorisiert)</code>.</div></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="num">6</span>Auswertung (marimo)</h2>
+<p>Neuer Übersichts-Teil oben in <code>panda_analysis.py</code>: <strong>Jahresübersicht</strong>
+(Einnahmen, Ausgaben nach Top-Level, Sparen separat, Saldo; aufklappbar auf 2.&nbsp;Ebene) und die
+<strong>Monatsmatrix</strong> — Zielbild:</p>
+
+<div class="tblwrap">
+<table>
+  <thead><tr><th>Kategorie</th><th>Jan</th><th>Feb</th><th>Mär</th><th>…</th><th>Dez</th><th>Ø/Monat</th></tr></thead>
+  <tbody>
+    <tr><td>einnahmen</td><td>+9.800</td><td>+9.800</td><td>+12.400</td><td>…</td><td>+9.800</td><td>+10.200</td></tr>
+    <tr><td>wohnen</td><td>−2.750</td><td>−2.750</td><td>−2.810</td><td>…</td><td>−2.750</td><td>−2.770</td></tr>
+    <tr><td>einkaufen</td><td>−1.180</td><td>−1.040</td><td>−1.220</td><td>…</td><td>−1.310</td><td>−1.190</td></tr>
+    <tr><td>kinder</td><td>−480</td><td>−520</td><td>−390</td><td>…</td><td>−610</td><td>−500</td></tr>
+    <tr><td>mobilitaet</td><td>−340</td><td>−280</td><td>−450</td><td>…</td><td>−300</td><td>−340</td></tr>
+    <tr><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+    <tr class="dim"><td>(unkategorisiert)</td><td>−120</td><td>−90</td><td>−210</td><td>…</td><td>−80</td><td>−130</td></tr>
+    <tr><td>sparen (separat)</td><td>−700</td><td>−700</td><td>−700</td><td>…</td><td>−700</td><td>−700</td></tr>
+    <tr class="total"><td>Saldo</td><td>+2.100</td><td>+2.300</td><td>+3.900</td><td>…</td><td>+1.900</td><td>+2.400</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="sub">Illustrative Beispielwerte — Struktur ist der Punkt: Unkategorisiertes als ehrliche eigene Zeile, Sparen getrennt vom Konsum.</p>
+
+<ul class="compact">
+  <li><strong>Datenstand-Warnung:</strong> letztes Buchungsdatum pro Konto — unvollständige Monate (Gesa: Nov/Dez 2025) fallen sofort auf, statt Zahlen still zu verfälschen.</li>
+  <li>Filter: Jahr, Konto. Transfers und <code>intern</code> ausgeschlossen (wie bisher).</li>
+  <li>Bestehende Spezial-Zellen (Arbeitszimmer, Anwalt, …) bleiben unangetastet.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2><span class="num">7</span>Migrationsplan — 6 verifizierbare Schritte</h2>
+<ol class="mig">
+  <li><strong>Regeln 1:1 nach YAML extrahieren.</strong>
+    <span class="v">Verifikation: Regressionstest — Kategorie-Zählungen vorher = nachher identisch.</span></li>
+  <li><strong>Normalisierung + PayPal/Amazon-Extraktion.</strong>
+    <span class="v">Verifikation: nur zusätzliche Treffer erlaubt, keine verlorenen.</span></li>
+  <li><strong>Taxonomie-Migration</strong> (Mapping auf YAML-Regeln und <code>category_manual</code>-Werte).
+    <span class="v">Verifikation: DuckDB-Backup vorher; Summen pro altem↔neuem Mapping-Paar gleich.</span></li>
+  <li><strong>Übersichts-Zellen in marimo</strong> (Jahresübersicht, Monatsmatrix, Datenstand-Warnung).</li>
+  <li><strong>Skill-Datei</strong> für den Quartals-Workflow.</li>
+  <li><strong>Erste echte Session für 2024/2025</strong> — Rückstau abarbeiten, Workflow am echten Fall testen.</li>
+</ol>
+
+<p><strong>Fehlerfälle:</strong> YAML-Validierung beim Laden (unbekanntes Top-Level / leere
+Pattern-Liste / falscher Typ ⇒ Fehler mit Regel-Angabe — erzwingt die geschlossene Top-Level-Liste);
+<code>category_manual</code> wird nie von Regeln überschrieben; Fingerprints ändern sich nicht
+(Normalisierung erzeugt nur abgeleitete Spalten).</p>
+
+<p><strong>Tests (pytest):</strong> PayPal-Extraktion mit echten zerhackten Strings ·
+VISA-Stripping · Substring/Konto/Betrag-Regeln · „letzte Regel gewinnt“ ·
+Taxonomie-Validierung · Regressionsvergleich aus Schritt&nbsp;1.</p>
+
+<div class="callout"><strong>Bewusst außerhalb des Scopes:</strong> kein LLM-API-Batch (kann später
+als Zusatzstufe andocken) · kein eigenes Regel-DSL (offener Punkt) · keine Änderung an
+Import/Fingerprint/DuckDB-Schema · keine Web-UI über marimo hinaus.</div>
+
+<footer>
+  Design-Spec pandacount · 2026-07-04 · ersetzt <code>2026-07-04-kategorisierung-design.md</code> ·
+  erstellt im Brainstorming Andreas ✕ Claude
+</footer>
+
+</main>
+</body>
+</html>
