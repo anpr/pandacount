@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a personal finance management tool called "pandacount" that processes bank statement CSV files and categorizes transactions. The main script is `panda.py` which imports bank statements, applies automatic categorization, and manages financial data in YAML format.
 
+## Authoritative Spec
+
+`docs/superpowers/specs/2026-07-04-kategorisierung-design.html` is the authoritative spec for
+categorization, taxonomy, and reporting — it applies to both humans and agents. In case of conflicts
+between this file and the spec, the spec wins.
+
 ## Core Architecture
 
 - **Main script**: `panda.py` - CLI tool built with Typer for importing and categorizing bank transactions
@@ -13,6 +19,8 @@ This is a personal finance management tool called "pandacount" that processes ba
 - **Backup files**: `pandacount-backup.yml`, `pandacount-backup2.yml` - Historical backups
 - **Analysis notebook**: `panda_scratch.ipynb` - Jupyter notebook for financial analysis and reporting
 - **Input data**: `kontoauszüge/` directory contains bank statement CSV files (ISO-8859-1 encoded)
+- **Rules as data**: `rules.yml` (categorization rules, git-versioned) + `rules.py` (loader, validation against closed top-level list, matching) + `normalize.py` (party_norm/merchant, whitespace squashing). Conditional special cases live as Python functions in `panda.py` (`apply_special_rules`) — intentionally no separate DSL.
+- **Categorization sessions**: quarterly via skill `.claude/skills/kategorisieren/SKILL.md`; individual cases via `./panda.py set-manual <fingerprint> <category>`.
 
 ## Key Components
 
@@ -49,6 +57,12 @@ mypy panda.py
 
 # Analysis
 jupyter lab panda_scratch.ipynb
+
+# Tests
+.venv/pandacount-3.13.7/bin/python -m pytest tests/ -v
+
+# Manual single categorization
+./panda.py set-manual <fingerprint> <category>
 ```
 
 ### Environment Setup
@@ -58,13 +72,20 @@ jupyter lab panda_scratch.ipynb
 
 ## Categorization System
 
-The categorization system uses extensive string matching rules in `categorize_df()`:
-- **Income categories**: `einnahmen::gehalt::andreas`, `einnahmen::gehalt::gesa`, `einnahmen::dividende`
-- **Housing**: `wohnen::rate`, `wohnen::strom`, `wohnen::putzen`, `wohnen::GEZ`
-- **Children**: `kinder::kleidung`, `kinder::sport`, `kinder::reiten`, `kinder::sparen`
-- **Mobility**: `mobilitaet::auto`, `mobilitaet::db`, `mobilitaet::fliegen`
-- **Health**: `gesundheit::debeka`, `gesundheit::vorleistung`
-- **And many more hierarchical categories**
+Categorization rules are defined in `rules.yml` and validated/matched via `rules.py`. The system supports
+a closed list of 15 top-level categories:
+
+- **Top-level categories**: einnahmen, wohnen, einkaufen, kinder, mobilitaet, gesundheit, versicherung, 
+  freizeit, urlaub, arbeit, persoenlich, finanzen, sparen + (special) intern, sonstiges
+
+Example categories (second level and below are free-form):
+- **Income**: `einnahmen::gehalt::andreas`, `einnahmen::gehalt::gesa`, `einnahmen::dividende`
+- **Housing**: `wohnen::rate`, `wohnen::strom`, `wohnen::putzen`, `wohnen::gez`
+- **Children**: `kinder::kleidung`, `kinder::sport`, `kinder::reiten`
+- **Savings**: `sparen::depot-paula`
+- **Mobility**: `mobilitaet::auto`, `mobilitaet::bahn`, `mobilitaet::fliegen`
+- **Health**: `gesundheit::pkv-gesa`, `gesundheit::vorleistung`
+- **And more hierarchical categories under other top-levels**
 
 ## Important Notes
 
