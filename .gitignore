@@ -6,3 +6,4 @@ pandacount-*.yml
 pandacount.duckdb.wal
 settings.local.json
 .superpowers/
+pandacount.duckdb.bak-*
