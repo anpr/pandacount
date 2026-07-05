@@ -45,3 +45,8 @@ def test_add_norm_columns() -> None:
     out = add_norm_columns(df)
     assert list(out["merchant"]) == ["disneyplus", "kant kino"]
     assert list(out["party_norm"]) == ["paypal europe s.a.r.l. et cie s.c.a", "kant kino"]
+
+
+def test_extract_merchant_amzn_variants_consolidate() -> None:
+    assert extract_merchant("VISA AMZN MKTP DE*1P66N9OD5", None) == "amazon"
+    assert extract_merchant("VISA AMZNPrime DE", None) == "amazon"

@@ -29,7 +29,7 @@ def extract_merchant(party: object, purpose: object) -> str:
         if match and match.group(1):
             return match.group(1)
         return party_norm(party)
-    if "amazon" in party_sq:
+    if "amazon" in party_sq or "amzn" in party_sq:
         return "amazon"
     return party_norm(party)
 

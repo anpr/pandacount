@@ -528,3 +528,118 @@
   match:
     party:
     - WEG Holsteinische Strase 43 in 10717 Berlin
+- category: persoenlich::kleidung
+  match:
+    merchant: ["zalando payments", "bergfreunde"]
+- category: wohnen::moebel
+  match:
+    merchant: ["hfb eco ikea", "ikea deutschland"]
+- category: wohnen::moebel::kueche
+  match:
+    party: ["TONHAUS MELODIE"]
+- category: persoenlich::elektronik
+  match:
+    merchant: ["gravis gmbh"]
+- category: freizeit::restaurant
+  match:
+    merchant: ["prince of punjab", "wolt wolt"]
+    purpose: ["Cafe LaMa"]
+- category: mobilitaet::fliegen
+  match:
+    merchant: ["austrian airlines"]
+- category: kinder::sport::emilia
+  match:
+    party: ["Randori-Pro"]
+- category: einnahmen::gehalt::andreas
+  match:
+    party: ["Mayple Tech GmbH"]
+  amount_min: 0
+- category: intern::ikano
+  match:
+    party: ["Ikano Bank"]
+- category: einnahmen::honorar::gesa
+  match:
+    party: ["Technische Universitaet Berlin", "Technische Universitat Berlin",
+            "Ministerium der Finanzen des Landes Brandenburg", "NORGES FORSKNINGSRAD"]
+- category: gesundheit::vorleistung
+  match:
+    party: ["PVS berlin"]
+- category: einkaufen
+  match:
+    party: ["BUDNI SAGT DANKE", "NAH U GUT", "BROT UND BUTTER"]
+- category: freizeit::media
+  match:
+    party: ["DPV Deutscher Pressevertrieb"]
+- category: freizeit::restaurant
+  match:
+    party: ["giro coffee bar"]
+- category: persoenlich::kleidung
+  match:
+    party: ["TEXTILHAEUSER F. KLING", "AVOCADO STORE", "VOLKER UND MONIKA GEISLER"]
+- category: kinder::kleidung
+  match:
+    party: ["SMILLA"]
+- category: sonstiges::kreditkarte
+  match:
+    party: ["Hanseatic Bank"]
+- category: einkaufen::amazon
+  match:
+    merchant: ["amazon"]
+- category: sparen::alte-leipziger
+  match:
+    party: ["Alte Leipziger"]
+- category: wohnen::renovierung
+  match:
+    party: ["Nohailic"]
+- category: persoenlich::kleidung
+  match:
+    party: ["MIENTUS", "SCARPAMONDO"]
+- category: einkaufen
+  match:
+    party: ["NATURKAUFHAUS", "BELLWINKEL"]
+- category: urlaub::unterkunft
+  match:
+    party: ["GREEN CITYHOTEL VAUBAN"]
+- category: freizeit::sport
+  match:
+    party: ["DECATHLON"]
+- category: freizeit::restaurant
+  match:
+    party: ["TOREINS", "MAA INDISCHE"]
+- category: kinder::tanzen
+  match:
+    party: ["Tanztangente"]
+- category: wohnen::kauf
+  match:
+    party: ["SHBI HV"]
+- category: gesundheit::vorleistung
+  match:
+    party: ["ZA AG", "IMD Berlin"]
+- category: arbeit::gesa::konferenz
+  match:
+    party: ["Copernicus Gesellschaft"]
+- category: persoenlich::elektronik
+  match:
+    party: ["expert e commerce"]
+- category: freizeit::media
+  match:
+    merchant: ["apple.com bill"]
+  amount_min: -50
+- category: finanzen::spenden
+  match:
+    party: ["unicef"]
+- category: gesundheit
+  match:
+    party: ["apotheke"]
+- category: mobilitaet::oepnv
+  match:
+    party: ["riverty.com*bvg"]
+- category: einkaufen
+  match:
+    party: ["fleischerei"]
+- category: kinder::schule-kita
+  match:
+    party: ["Silvana Mastroianni"]
+- category: persoenlich::elektronik
+  match:
+    party: ["SATURN ELECTRO"]
