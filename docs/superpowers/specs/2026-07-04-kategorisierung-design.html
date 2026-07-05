@@ -413,8 +413,16 @@ YAML&nbsp;+&nbsp;Python-Escape-Hatch, kein eigenes Mini-DSL.</p>
   </div>
   <div class="step">
     <div class="n">3</div>
-    <div class="body"><div class="t">Einzelfälle: Mensch in der Schleife</div>
-      <div class="d">Für große Einzeltransaktionen schlägt Claude <code>category_manual</code> vor. Was aus den Daten nicht erschließbar ist („Tim Leers −12.500&nbsp;€“), fragt Claude direkt.</div></div>
+    <div class="body"><div class="t">Einzelfälle: Evidenz-Schicht, dann Mensch</div>
+      <div class="d">Für große Einzeltransaktionen schlägt Claude <code>category_manual</code> vor.
+      Für ungeklärte Posten &gt; ~50–100&nbsp;€ gilt die Reihenfolge <strong>recoll → Websearch → Andreas</strong>:
+      zuerst lokale E-Mail-Suche (<code>RECOLL_CONFDIR=~/.recoll-thunderbird recoll -t -q '…'</code>,
+      verfeinerbar mit Betrag im deutschen Format und Datumsfenster) — die Mails wissen, <em>was gekauft wurde</em>;
+      Websearch nur als Fallback zur Händler-Klassifikation und nie für Namen von Privatpersonen.
+      Bei Widerspruch gewinnt die E-Mail-Evidenz. Jeder Vorschlag zitiert seine Quelle (Mail-Betreff + Datum).
+      Was offen bleibt („Tim Leers −12.500&nbsp;€“), fragt Claude direkt.
+      Die Evidenz-Suche läuft nur in der Session (Entscheidungszeitpunkt) — die deterministische
+      Pipeline bleibt unberührt; Ergebnisse persistieren als Regel oder <code>category_manual</code>.</div></div>
   </div>
   <div class="step">
     <div class="n">4</div>

@@ -47,11 +47,25 @@ Für jeden Kandidaten mit n≥2 oder |summe|≥500 €: Kategorie vorschlagen, i
 (merchant, n, summe, Beispiel-purpose). Nach Bestätigung: Regel ans Ende von `rules.yml` anhängen
 (`- category: …\n  match: {merchant: ["…"]}` bzw. party/purpose), dann `./panda.py categorize`.
 
-### 3. Einzelfälle
+### 3. Einzelfälle — mit Evidenz-Schicht
 
-Verbleibende große Einzeltransaktionen (|amount| absteigend) mit Kategorie-Vorschlag zeigen;
-was aus den Daten nicht erschließbar ist, Andreas direkt fragen.
-Bestätigte: `./panda.py set-manual <fingerprint> <category>`.
+Verbleibende große Einzeltransaktionen (|amount| absteigend) mit Kategorie-Vorschlag zeigen.
+Für ungeklärte Posten oberhalb ~50–100 € gilt die Reihenfolge **recoll → Websearch → Andreas fragen**:
+
+1. **recoll (lokale E-Mail-Suche, Thunderbird-Index):**
+
+       RECOLL_CONFDIR=~/.recoll-thunderbird /Users/anpr/.local/bin/recoll -t -n 5 -q '<party-wörter>'
+
+   Query-Verfeinerung bei zu vielen Treffern: Betrag im deutschen Format dazu (`"1.310,50"`)
+   oder Datumsfenster (`date:2025-11-01/2025-11-30`). Treffer (Betreff + Datum) sind die Evidenz.
+2. **Websearch** nur als Fallback zur Händler-Klassifikation (was verkauft diese GmbH?).
+   NIE Namen von Privatpersonen ins Web schicken — die bleiben lokal/bei Andreas.
+   Achtung: Websearch klassifiziert den Händler, nicht den Kauf — E-Mail-Evidenz gewinnt
+   bei Widerspruch (Beispiel: „Tonhaus Melodie" klingt nach Musikladen, war laut Mail ein Einbauherd).
+3. Was danach offen bleibt, Andreas direkt fragen.
+
+Jeder Vorschlag zitiert seine Evidenz (Mail-Betreff + Datum bzw. Suchtreffer), damit Andreas
+in Sekunden bestätigen kann. Bestätigte: `./panda.py set-manual <fingerprint> <category>`.
 Fingerprint einer Zeile findet man per:
 
     SELECT fingerprint, book_date, party, amount_cents/100.0 FROM transactions WHERE …
