@@ -18,6 +18,140 @@ def _():
 
 
 @app.cell
+def _():
+    import marimo as mo
+
+    return (mo,)
+
+
+@app.cell
+def _(mo, pc):
+    # Datenstand pro Konto — unvollständige Monate sofort sichtbar machen
+    import datetime as _dt
+
+    _stand = pc.groupby("account").book_date.max().sort_values()
+    _stale = _stand[_stand < (pc.book_date.max() - _dt.timedelta(days=45))]
+    _warn = (
+        mo.md(
+            "⚠️ **Datenstand-Warnung:** "
+            + ", ".join(f"`{a}` endet {d:%d.%m.%Y}" for a, d in _stale.items())
+            + " — Zahlen für diese Konten sind in späteren Monaten unvollständig."
+        )
+        if not _stale.empty
+        else mo.md("✅ Alle Konten aktuell.")
+    )
+    mo.vstack([mo.md("## Datenstand pro Konto"), mo.ui.table(_stand.reset_index()), _warn])
+    return
+
+
+@app.cell
+def _(mo, pc):
+    # Jahr-Auswahl für die Übersichten
+    _years = sorted(pc.book_date.dt.year.unique().tolist())
+    year_select = mo.ui.dropdown(
+        options={str(y): y for y in _years}, value=str(_years[-1]), label="Jahr"
+    )
+    year_select
+    return (year_select,)
+
+
+@app.cell
+def _(pc, pd):
+    def top_level(cat: object) -> str:
+        return cat.split("::")[0] if isinstance(cat, str) else "(unkategorisiert)"
+
+    def overview_base(df: pd.DataFrame, year: int) -> pd.DataFrame:
+        out = df[
+            (df.book_date.dt.year == year)
+            & df.transfer_category.isna()
+            & df.account.isin(["giro", "gesa", "common"])
+        ].copy()
+        out["top"] = out["cat"].map(top_level)
+        out = out[out["top"] != "intern"]
+        out["month"] = out.book_date.dt.month
+        return out
+
+    return overview_base, top_level
+
+
+@app.cell
+def _(mo, overview_base, pc, year_select):
+    # Jahresübersicht: Einnahmen / Ausgaben nach Top-Level / Sparen / Saldo
+    _df = overview_base(pc, year_select.value)
+    _einnahmen = _df[_df.top == "einnahmen"].amount.sum()
+    _sparen = _df[_df.top == "sparen"].amount.sum()
+    _ausgaben_df = _df[~_df.top.isin(["einnahmen", "sparen"])]
+    _ausgaben = _ausgaben_df.groupby("top").amount.sum().sort_values()
+    _saldo = _df.amount.sum()
+    mo.vstack(
+        [
+            mo.md(
+                f"## Jahresübersicht {year_select.value}\n"
+                f"**Einnahmen:** {_einnahmen:,.2f} € · "
+                f"**Ausgaben:** {_ausgaben.sum():,.2f} € · "
+                f"**Sparen:** {_sparen:,.2f} € · **Saldo:** {_saldo:,.2f} €"
+            ),
+            mo.ui.table(_ausgaben.reset_index().rename(columns={"amount": "summe"})),
+        ]
+    )
+    return
+
+
+@app.cell
+def _(mo, overview_base, pc, pd, year_select):
+    # Monatsmatrix: Top-Level × Monat, Ø-Spalte, Saldo-Zeile
+    _df = overview_base(pc, year_select.value)
+    _matrix = _df.pivot_table(
+        index="top", columns="month", values="amount", aggfunc="sum", fill_value=0.0
+    )
+    _matrix["Ø"] = _matrix.mean(axis=1)
+    _order = (
+        ["einnahmen"]
+        + sorted(
+            [t for t in _matrix.index if t not in ("einnahmen", "sparen", "(unkategorisiert)")],
+            key=lambda t: _matrix.loc[t, "Ø"],
+        )
+        + [t for t in ("(unkategorisiert)", "sparen") if t in _matrix.index]
+    )
+    _matrix = _matrix.reindex(_order)
+    _matrix.loc["Saldo"] = _matrix.sum()
+    mo.vstack(
+        [
+            mo.md(f"## Monatsmatrix {year_select.value}"),
+            mo.ui.table(_matrix.round(0).reset_index(), page_size=20),
+        ]
+    )
+    return
+
+
+@app.cell
+def _(mo, pc, top_level):
+    # Drilldown: 2. Ebene innerhalb eines Top-Levels
+    _tops = sorted({top_level(c) for c in pc["cat"].dropna().unique()})
+    drill_select = mo.ui.dropdown(options=_tops, value="wohnen", label="Top-Level aufklappen")
+    drill_select
+    return (drill_select,)
+
+
+@app.cell
+def _(drill_select, mo, overview_base, pc, year_select):
+    _df = overview_base(pc, year_select.value)
+    _sub = _df[_df.top == drill_select.value].copy()
+    _sub["sub"] = _sub["cat"].fillna("(unkategorisiert)")
+    _pivot = _sub.pivot_table(
+        index="sub", columns="month", values="amount", aggfunc="sum", fill_value=0.0
+    )
+    _pivot["Σ"] = _pivot.sum(axis=1)
+    mo.vstack(
+        [
+            mo.md(f"### {drill_select.value} — 2. Ebene ({year_select.value})"),
+            mo.ui.table(_pivot.round(0).reset_index(), page_size=20),
+        ]
+    )
+    return
+
+
+@app.cell
 def _(pc):
     # Display column information
     print("Columns in dataset:")
