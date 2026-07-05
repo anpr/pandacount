@@ -10,7 +10,7 @@ import typer
 from toolz import pipe
 
 from normalize import add_norm_columns
-from rules import apply_rules, load_rules
+from rules import apply_rules, load_rules, validate_category
 
 
 from contextlib import contextmanager
@@ -381,6 +381,27 @@ def categorize():
     pc = load_pc_from_db()
     pc = categorize_pipeline(pc)
     save_pc_to_db(pc)
+
+
+@app.command()
+def set_manual(fingerprint: str, category: str) -> None:
+    """Setzt category_manual für die Transaktion mit diesem Fingerprint."""
+    validate_category(category)
+    con = duckdb.connect(str(get_db_path()))
+    try:
+        n = con.execute(
+            "SELECT count(*) FROM transactions WHERE fingerprint = ?", [fingerprint]
+        ).fetchone()[0]
+        if n == 0:
+            typer.echo(f"Kein Eintrag mit Fingerprint {fingerprint}", err=True)
+            raise SystemExit(1)
+        con.execute(
+            "UPDATE transactions SET category_manual = ? WHERE fingerprint = ?",
+            [category, fingerprint],
+        )
+        typer.echo(f"{fingerprint} -> {category}")
+    finally:
+        con.close()
 
 
 if __name__ == "__main__":
