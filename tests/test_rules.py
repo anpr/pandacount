@@ -107,3 +107,20 @@ def test_missing_match_column_yields_no_match_instead_of_keyerror() -> None:
     rules = [Rule(category="persoenlich", match={"merchant": ("etsy",)})]
     out = apply_rules(df, rules)
     assert pd.isna(out.loc[0, "category"])
+
+
+def test_categorize_df_clears_stale_categories() -> None:
+    import panda
+
+    df = pd.DataFrame(
+        {
+            "account": ["giro"],
+            "party": ["Unbekannte Party XYZ"],
+            "purpose": ["nichts"],
+            "book_text": ["Lastschrift"],
+            "amount": [-10.0],
+            "category": ["freizeit::veraltet"],  # stale aus früherem Lauf
+        }
+    )
+    out = panda.categorize_df(df)
+    assert pd.isna(out.loc[0, "category"])

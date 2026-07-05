@@ -24,8 +24,12 @@ def skip_lines_until(file_name: str, predicate: Callable[[str], bool]):
     Then yields the file _including_ the line where the predicate is true."""
     with open(file_name, mode="r", encoding="iso-8859-1") as f:
         pos = f.tell()
-        while not predicate(f.readline()):
+        line = f.readline()
+        while not predicate(line):
+            if line == "":
+                raise ValueError(f"header not found in {file_name}")
             pos = f.tell()
+            line = f.readline()
         # Go back to the beginning of the line
         f.seek(pos)
         yield f
@@ -129,6 +133,7 @@ def apply_special_rules(df: pd.DataFrame) -> pd.DataFrame:
 
 def categorize_df(df: pd.DataFrame) -> pd.DataFrame:
     """Setzt category anhand rules.yml + Python-Spezialregeln."""
+    df["category"] = pd.NA
     return apply_special_rules(apply_rules(df, load_rules()))
 
 

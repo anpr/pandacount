@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a personal finance management tool called "pandacount" that processes bank statement CSV files and categorizes transactions. The main script is `panda.py` which imports bank statements, applies automatic categorization, and manages financial data in YAML format.
+This is a personal finance management tool called "pandacount" that processes bank statement CSV files and categorizes transactions. The main script is `panda.py` which imports bank statements, applies automatic categorization, and manages financial data in DuckDB (`pandacount.duckdb`).
 
 ## Authoritative Spec
 
@@ -15,8 +15,7 @@ between this file and the spec, the spec wins.
 ## Core Architecture
 
 - **Main script**: `panda.py` - CLI tool built with Typer for importing and categorizing bank transactions
-- **Data storage**: `pandacount.yml` - Main data file containing all categorized transactions
-- **Backup files**: `pandacount-backup.yml`, `pandacount-backup2.yml` - Historical backups
+- **Data storage**: `pandacount.duckdb` - DuckDB database with all transactions (fingerprint-deduplicated); legacy YAML files (`pandacount*.yml`) are historical
 - **Analysis notebook**: `panda_scratch.ipynb` - Jupyter notebook for financial analysis and reporting
 - **Input data**: `kontoauszüge/` directory contains bank statement CSV files (ISO-8859-1 encoded)
 - **Rules as data**: `rules.yml` (categorization rules, git-versioned) + `rules.py` (loader, validation against closed top-level list, matching) + `normalize.py` (party_norm/merchant, whitespace squashing). Conditional special cases live as Python functions in `panda.py` (`apply_special_rules`) — intentionally no separate DSL.
@@ -27,7 +26,7 @@ between this file and the spec, the spec wins.
 ### Transaction Processing Pipeline
 1. **CSV Import** (`to_raw_df`): Parses bank CSV files with German date format and ISO-8859-1 encoding
 2. **Account Mapping** (`get_account`): Maps IBAN numbers to account names (common, giro, gesa, extra, extra-common)
-3. **Categorization** (`categorize_df`): Applies extensive rule-based categorization using party/purpose string matching
+3. **Categorization** (`categorize_df`): Applies rules from `rules.yml` (via `rules.py`) plus Python special cases (`apply_special_rules`)
 4. **Transfer Categorization** (`transfer_categorize`): Identifies internal transfers between accounts
 5. **Final Category Assignment** (`add_cat`): Merges automatic and manual categories
 
@@ -94,7 +93,6 @@ Example categories (second level and below are free-form):
 - Amounts use German number format (dots as thousands separator, comma as decimal)
 - The system expects specific IBAN numbers mapped to account names
 - Manual category overrides are supported via `category_manual` field
-- All data is stored in human-readable YAML format for transparency
 
 ## File Encoding
 
