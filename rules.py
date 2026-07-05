@@ -1,8 +1,11 @@
 """Kategorisierungsregeln: Laden, Validieren und Anwenden von rules.yml.
 
-Match-Semantik (identisch zum historischen Dict in panda.py):
-case-insensitives Substring-Matching pro Attribut; spätere Regeln überschreiben
-frühere; account = Gleichheit; amount_min/amount_max sind exklusive Schranken.
+Match-Semantik (identisch zum historischen Dict in panda.py, jetzt auf
+gesquashten Werten): case-insensitives Substring-Matching pro Attribut, wobei
+sowohl Wert als auch Pattern durch normalize.squash laufen (Whitespace
+entfernt) — das repariert ING-Zeilenumbrüche wie "ETSY I RELAND"; spätere
+Regeln überschreiben frühere; account = Gleichheit; amount_min/amount_max
+sind exklusive Schranken.
 """
 
 from dataclasses import dataclass, field
@@ -11,9 +14,11 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
+from normalize import squash
+
 RULES_PATH = Path(__file__).parent / "rules.yml"
 
-MATCH_ATTRIBUTES = ("party", "purpose", "book_text")
+MATCH_ATTRIBUTES = ("party", "purpose", "book_text", "merchant")
 RULE_FIELDS = {"category", "match", "account", "amount_min", "amount_max"}
 
 
@@ -66,9 +71,9 @@ def load_rules(path: Path = RULES_PATH) -> list[Rule]:
 def _rule_mask(df: pd.DataFrame, rule: Rule) -> pd.Series:
     mask = pd.Series(False, index=df.index)
     for attr, patterns in rule.match.items():
-        values = df[attr].fillna("").str.lower()
+        values = df.get(attr, pd.Series("", index=df.index)).fillna("").map(squash)
         for pattern in patterns:
-            mask |= values.str.contains(pattern.lower(), regex=False)
+            mask |= values.str.contains(squash(pattern), regex=False)
     if rule.account is not None:
         mask &= df["account"] == rule.account
     if rule.amount_min is not None:

@@ -9,6 +9,7 @@ import pandas as pd
 import typer
 from toolz import pipe
 
+from normalize import add_norm_columns
 from rules import apply_rules, load_rules
 
 
@@ -764,7 +765,7 @@ def import_to_pandacount(pc: pd.DataFrame, df: pd.DataFrame) -> pd.DataFrame:
 
 def categorize_pipeline(pc: pd.DataFrame) -> pd.DataFrame:
     print(f"Categorizing {pc.shape[0]} entries...")
-    return pipe(pc, transfer_categorize, categorize_df)
+    return pipe(pc, transfer_categorize, add_norm_columns, categorize_df)
 
 
 @app.command()

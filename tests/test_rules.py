@@ -75,3 +75,34 @@ def test_load_rules_rejects_invalid(tmp_path: Path, yml: str) -> None:
     p.write_text(yml, encoding="utf-8")
     with pytest.raises(ValueError):
         load_rules(p)
+
+
+def test_squashed_matching_repairs_chopped_strings() -> None:
+    df = pd.DataFrame(
+        {
+            "account": ["giro"],
+            "party": ["PayPal Europe S.a.r.l."],
+            "purpose": ["1031 . ETSY IRELAND UNLIMI TED, Ihr Einkauf bei ETSY I RELAND"],
+            "book_text": ["Lastschrift"],
+            "amount": [-10.0],
+            "merchant": ["etsyirelandunlimitedcompany"],
+        }
+    )
+    rules = [Rule(category="persoenlich", match={"merchant": ("etsy ireland",)})]
+    assert apply_rules(df, rules).loc[0, "category"] == "persoenlich"
+
+
+def test_missing_match_column_yields_no_match_instead_of_keyerror() -> None:
+    df = pd.DataFrame(
+        {
+            "account": ["giro"],
+            "party": ["PayPal Europe S.a.r.l."],
+            "purpose": ["irgendwas"],
+            "book_text": ["Lastschrift"],
+            "amount": [-10.0],
+            # kein "merchant" — add_norm_columns wurde nicht aufgerufen
+        }
+    )
+    rules = [Rule(category="persoenlich", match={"merchant": ("etsy",)})]
+    out = apply_rules(df, rules)
+    assert pd.isna(out.loc[0, "category"])
