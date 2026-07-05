@@ -1,9 +1,9 @@
-- category: anwalt::centurion
+- category: finanzen::anwalt
   match:
     party:
     - zirngibl
     - KNH Rechtsanwaelte
-- category: bargeld
+- category: finanzen::bargeld
   match:
     party:
     - bargeldauszahlung
@@ -68,28 +68,28 @@
     party:
     - Katherine Finger
     - ELIXIA
-- category: gesa::amazon
+- category: persoenlich::amazon
   match:
     party:
     - AMAZON PAYMENTS EUROPE
     - AMAZON EU S.A R.L.
   account: common
-- category: gesa::dienstreise::unterkunft
+- category: arbeit::gesa::dienstreise
   match:
     party:
     - VISA THE HENDRICK
     - Hostel-Gaestehaus- Kaiserpassage
     - VISA HOTEL WALDERHAUS
-- category: gesa::arbeit::software
+- category: arbeit::gesa::software
   match:
     party:
     - VISA ZOTERO.ORG
     - VISA DEEPL* SUB BTLT6OUUVV6
-- category: gesa::friseur
+- category: persoenlich::friseur
   match:
     party:
     - Fahlke Horstmann
-- category: geschenk
+- category: persoenlich::geschenke
   match:
     party:
     - VISA SPIELVOGEL
@@ -119,7 +119,7 @@
     - Center-Apotheke im Minipreis
     - SPEICKSHOP
     - SHAVING.IE
-- category: gesundheit::debeka
+- category: gesundheit::pkv-gesa
   match:
     party:
     - Debeka Kranken-Versicherung-Verein a.G
@@ -132,12 +132,12 @@
     - Prof. Dr. med. habil Wolfgang Hardt
     - Lungenpraxis Hohenzollerndamm
     - Dr.med.Monika Kalus,Dr.med.Jorrit Brunnemann
-- category: handy
+- category: persoenlich::handy
   match:
     party:
     - congstar - eine Marke der Telekom Deutschland GmbH
     - fraenk - eine Marke der Telekom Deutschland GmbH
-- category: kleidung
+- category: persoenlich::kleidung
   match:
     party:
     - VISA MAGAZZINO
@@ -165,7 +165,7 @@
     - Zoologischer Garten Be
     - Kinderschwimmen
     - ECO Brotbox GmbH
-- category: kinder::babysitter
+- category: kinder::betreuung
   match:
     party:
     - Carolina Sgro
@@ -179,7 +179,7 @@
     - greenstories KG
     - VISA KLEINE HELDEN
     - VISA KLIX - KLEINE SACHEN
-- category: kinder::kindergeld
+- category: einnahmen::kindergeld
   match:
     party:
     - Bundesagentur fur Arbeit - Familienkasse
@@ -187,7 +187,7 @@
   match:
     party:
     - Jugend im Museum e.V.
-- category: kinder::sparen
+- category: sparen::depot-paula
   match:
     purpose:
     - Sparen Depot Paula
@@ -198,7 +198,7 @@
     - VISA REITSPORT-CENTER
     - kokitu / Sascha Splettstoesser
     - marameo Berlin e. V.
-- category: kinder::schulekita
+- category: kinder::schule-kita
   match:
     party:
     - NBH Schoeneberg
@@ -225,18 +225,18 @@
     - KINDER- UND JUGEND-, REIT- UND FAHRVEREIN ZEHLENDORF E.V.
     - Kinder- und Jugend-, Reit- undFahrverein Zehlendorf e.V.
     - KINDER- und JUGEND-REIT- und FAHRVEREIN ZEHLENDORF e.V.
-- category: konferenz
+- category: arbeit::andreas::konferenz
   match:
     party:
     - VISA MOLLIEDECONGRESBALIE
     - VISA MOL*HOTEL ZUIDERDUIN
     - VISA IAIA
     - VISA TALLINNFORUM.ORG
-- category: justetf
+- category: finanzen::gebuehren
   match:
     party:
     - justETF GmbH
-- category: media
+- category: freizeit::media
   match:
     party:
     - amznprime
@@ -254,7 +254,7 @@
     - PP . DisneyPlus, Ihr Einkau f bei DisneyPlus
     - Hugendubel Digital GmbH + Co. KG
     - Zeit Audio Abo
-- category: mitgliedsbeitraege
+- category: finanzen::mitgliedsbeitraege
   match:
     party:
     - Deutscher Hochschulverband
@@ -276,7 +276,7 @@
     - Landeshauptkasse Berlin
     - VISA ESSO STATION
     - VISA ARAL TANKSTELLE 286077
-- category: mobilitaet::autoleihen
+- category: mobilitaet::mietwagen
   match:
     party:
     - VISA ENTERPRISE RENT A CAR
@@ -285,16 +285,16 @@
     - VISA WWW.AUTOEUROPE.DE
     - VISA GOLDCAR PISA
     - VISA AGIP SERVICE-STATION
-- category: mobilitaet::deutschlandticket
+- category: mobilitaet::oepnv::deutschlandticket
   match:
     party:
     - S-Bahn Berlin GmbH
-- category: 'mobilitaet::db::oebb:'
+- category: mobilitaet::bahn::oebb
   match:
     purpose:
     - OBB-Personenverkehr AG
     - OEBB PV AG
-- category: mobilitaet::db
+- category: mobilitaet::bahn
   match:
     party:
     - DB Vertrieb GmbH
@@ -323,33 +323,33 @@
     - ryanair limited
     - deutsche lufthansa
     - Koninklijke Luchtvaart Maatschappij
-- category: mobilitaet::oeffentlich
+- category: mobilitaet::oepnv
   match:
     party:
     - bvg app
     - DB Fernverkehr AG
     purpose:
     - DB Vertrieb GmbH
-- category: moebel
+- category: wohnen::moebel
   match:
     party:
     - VISA JALOU CITY GMBH
     - JalouCity Heimtextilien
     - VISA TYLKO S.A.
-- category: moebel::bad
+- category: wohnen::moebel::bad
   match:
     party:
     - VISA MOEVE SHOP
-- category: moebel::kueche
+- category: wohnen::moebel::kueche
   match:
     party:
     - VISA ZETTLE *K-TEK KUCHENAR
-- category: moebel::beleuchtung
+- category: wohnen::moebel::beleuchtung
   match:
     party:
     - visa elektrowaren prediger
     - Elektroanlagen-Technik Pockrandt
-- category: moebel::geraete
+- category: wohnen::moebel::geraete
   match:
     party:
     - eShoppen Germany GmbH
@@ -359,7 +359,7 @@
     - andreas profous
     - profous
     - gesa geissler
-- category: intern::rente
+- category: sparen::wertpapierkauf
   match:
     purpose:
     - Wertpapierkauf
@@ -369,7 +369,7 @@
   match:
     purpose:
     - Ausgleich Steuerklasse
-- category: restaurant
+- category: freizeit::restaurant
   match:
     party:
     - cocolo ramen
@@ -429,11 +429,11 @@
     - VISA OSTERIA DEL NONNO
     purpose:
     - TIAN FU // BERLIN
-- category: rente::gesa
+- category: sparen::rente-gesa
   match:
     party:
     - DWS Investment GmbH
-- category: spenden
+- category: finanzen::spenden
   match:
     party:
     - Aerzte ohne Grenzen eV
@@ -476,7 +476,7 @@
     - HUK-COBURG UNTERNEHMENSGRUPPE
     purpose:
     - CosmosDirekt Kfz Beitrag
-- category: versicherung::hausratversichterung
+- category: versicherung::hausrat
   match:
     party:
     - COYA Hausrat
@@ -487,11 +487,11 @@
     - GETSAFE
     purpose:
     - COYA Hausrat
-- category: gesundheit::krankenversicherung
+- category: gesundheit::pkv-andreas
   match:
     party:
     - ALTE OLDENBURGER Krankenversicherung AG
-- category: gesundheit::krankenzusatz
+- category: gesundheit::zusatz
   match:
     party:
     - Envivas Krankenversicherung AG
@@ -504,7 +504,7 @@
   match:
     purpose:
     - STEUERNR 024/749/07849 GRUNDST
-- category: wohnen::GEZ
+- category: wohnen::gez
   match:
     party:
     - Rundfunk ARD, ZDF, DRadio

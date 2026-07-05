@@ -21,6 +21,36 @@ RULES_PATH = Path(__file__).parent / "rules.yml"
 MATCH_ATTRIBUTES = ("party", "purpose", "book_text", "merchant")
 RULE_FIELDS = {"category", "match", "account", "amount_min", "amount_max"}
 
+TOP_LEVELS: frozenset[str] = frozenset(
+    {
+        "einnahmen",
+        "wohnen",
+        "einkaufen",
+        "kinder",
+        "mobilitaet",
+        "gesundheit",
+        "versicherung",
+        "freizeit",
+        "urlaub",
+        "arbeit",
+        "persoenlich",
+        "finanzen",
+        "sparen",
+        "intern",
+        "sonstiges",
+    }
+)
+
+
+def validate_category(category: str) -> None:
+    top = category.split("::")[0]
+    if top not in TOP_LEVELS:
+        raise ValueError(
+            f"Kategorie {category!r}: Top-Level {top!r} nicht in der geschlossenen "
+            f"Liste {sorted(TOP_LEVELS)} (Spec: docs/superpowers/specs/"
+            f"2026-07-04-kategorisierung-design.html)"
+        )
+
 
 @dataclass(frozen=True)
 class Rule:
@@ -40,6 +70,7 @@ def _parse_rule(index: int, raw: dict) -> Rule:
         raise err(f"unbekannte Felder {sorted(unknown)}")
     if not isinstance(raw.get("category"), str) or not raw["category"]:
         raise err("category fehlt oder ist kein String")
+    validate_category(raw["category"])
     match_raw = raw.get("match")
     if not isinstance(match_raw, dict) or not match_raw:
         raise err("match fehlt oder ist leer")

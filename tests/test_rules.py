@@ -27,23 +27,23 @@ def test_substring_match_case_insensitive() -> None:
 
 def test_later_rule_wins() -> None:
     rules = [
-        Rule(category="a", match={"purpose": ("spotify",)}),
-        Rule(category="b", match={"purpose": ("spotify ab",)}),
+        Rule(category="einkaufen", match={"purpose": ("spotify",)}),
+        Rule(category="freizeit", match={"purpose": ("spotify ab",)}),
     ]
     out = apply_rules(_df(), rules)
-    assert out.loc[2, "category"] == "b"
+    assert out.loc[2, "category"] == "freizeit"
 
 
 def test_account_constraint() -> None:
-    rules = [Rule(category="x", match={"party": ("apple",)}, account="common")]
+    rules = [Rule(category="persoenlich", match={"party": ("apple",)}, account="common")]
     out = apply_rules(_df(), rules)
     assert pd.isna(out.loc[1, "category"])  # apple ist auf gesa, nicht common
 
 
 def test_amount_min_exclusive() -> None:
-    rules = [Rule(category="media", match={"party": ("apple",)}, amount_min=-50.0)]
+    rules = [Rule(category="freizeit::media", match={"party": ("apple",)}, amount_min=-50.0)]
     out = apply_rules(_df(), rules)
-    assert out.loc[1, "category"] == "media"  # -9.99 > -50
+    assert out.loc[1, "category"] == "freizeit::media"  # -9.99 > -50
     out2 = apply_rules(_df(amount=[-20.0, -60.0, -12.0]), rules)
     assert pd.isna(out2.loc[1, "category"])  # -60 < -50
 
@@ -52,7 +52,8 @@ def test_load_rules_roundtrip(tmp_path: Path) -> None:
     p = tmp_path / "rules.yml"
     p.write_text(
         '- category: einkaufen\n  match: {party: ["bio company"]}\n'
-        '- category: media\n  match: {party: ["apple"]}\n  account: gesa\n  amount_min: -50\n',
+        '- category: freizeit::media\n  match: {party: ["apple"]}\n'
+        "  account: gesa\n  amount_min: -50\n",
         encoding="utf-8",
     )
     rules = load_rules(p)
