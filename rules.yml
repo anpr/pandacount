@@ -679,3 +679,49 @@
 - category: kinder::schule-kita
   match:
     merchant: ["bezirksamt tempelhof", "derdiedas"]
+- category: freizeit::restaurant
+  match:
+    merchant: ["manjurani", "nea knosso", "osterelli", "restaurant jolly"]
+- category: freizeit::buch
+  match:
+    merchant: ["thalia"]
+- category: freizeit::media
+  match:
+    merchant: ["audible"]
+- category: freizeit::konzert
+  match:
+    merchant: ["staatsoper", "etix"]
+- category: freizeit
+  match:
+    merchant: ["staatl. museen", "myheritage"]
+- category: freizeit::sport
+  match:
+    merchant: ["sport bohny", "indiko"]
+- category: einkaufen
+  match:
+    merchant: ["obstgarten"]
+    purpose: ["bellwinkel"]
+- category: kinder::schule-kita
+  match:
+    merchant: ["cristiana patti", "albert-einstein"]
+- category: kinder::kleidung
+  match:
+    merchant: ["klix"]
+- category: wohnen::haushalt
+  match:
+    merchant: ["bauhaus", "genkinger"]
+- category: wohnen::moebel
+  match:
+    merchant: ["hevo"]
+- category: wohnen::pflanzen
+  match:
+    merchant: ["balkonbar"]
+- category: persoenlich::kleidung
+  match:
+    merchant: ["schwarzer reiter", "pramo", "hartog"]
+- category: persoenlich::geschenke
+  match:
+    merchant: ["kf design"]
+- category: arbeit::andreas
+  match:
+    merchant: ["openai"]
