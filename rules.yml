@@ -847,3 +847,39 @@
 - category: sonstiges::porto
   match:
     merchant: ["deutsche post ag", "deutsche post 4"]
+- category: freizeit::restaurant
+  match:
+    merchant: ["litaly", "losteria", "restaurant sueden", "chupenga", "pasta & basta", "hoxton"]
+- category: persoenlich::kleidung
+  match:
+    merchant: ["modfreak", "markenkoffer"]
+- category: einkaufen
+  match:
+    merchant: ["weltladen", "contigo", "rewe philipp", "dm drogerie"]
+- category: mobilitaet::auto
+  match:
+    merchant: ["aral tankstelle", "score-sb", "bundeskasse do kiel"]
+- category: mobilitaet::fliegen
+  match:
+    merchant: ["wizz air"]
+- category: freizeit::konzert
+  match:
+    merchant: ["deutsche oper"]
+- category: freizeit
+  match:
+    merchant: ["yorck kinos", "liquidrom", "rainer abicht", "fahrkarten schifffahrt"]
+- category: freizeit::buch
+  match:
+    merchant: ["buchhandlung"]
+- category: finanzen::mitgliedsbeitraege
+  match:
+    merchant: ["freunde der kunsthalle"]
+- category: wohnen::haushalt
+  match:
+    merchant: ["miele"]
+- category: persoenlich
+  match:
+    merchant: ["bueromarkt"]
+- category: kinder::schule-kita
+  match:
+    merchant: ["europa unter einem dach"]
