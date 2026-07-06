@@ -138,6 +138,7 @@ def _(ausgaben_table, euro, jahres_basis, jahr_select, mo, monatsspalten, pc):
         _pivot = monatsspalten(_pivot)
         _pivot["Σ"] = _pivot.sum(axis=1)
         _pivot = _pivot.sort_values("Σ").round(0)
+        _pivot = _pivot[["Σ"] + [c for c in _pivot.columns if c != "Σ"]]
 
         _tx = _sub.sort_values("amount")[
             ["book_date", "account", "ebene2", "party", "purpose", "amount"]
