@@ -725,3 +725,43 @@
 - category: arbeit::andreas
   match:
     merchant: ["openai"]
+- category: freizeit::restaurant
+  match:
+    merchant: ["tiger club", "swadesh", "osteria italian", "salumeria veneto", "chinese orig", "waldorf astoria"]
+    purpose: ["nea knosso"]
+- category: mobilitaet::auto
+  match:
+    merchant: ["easypark", "jet tankstelle"]
+- category: mobilitaet::fliegen
+  match:
+    merchant: ["airfrance"]
+- category: persoenlich::kleidung
+  match:
+    merchant: ["viviry", "benetton", "naturkompaniet", "anna tembrink"]
+- category: freizeit::buch
+  match:
+    merchant: ["libri.de"]
+- category: einkaufen
+  match:
+    merchant: ["herr koch"]
+- category: persoenlich::geschenke
+  match:
+    merchant: ["pasda", "dodt", "ghsretail"]
+- category: wohnen::moebel
+  match:
+    merchant: ["kare online"]
+- category: wohnen::haushalt
+  match:
+    merchant: ["linum"]
+- category: arbeit::andreas
+  match:
+    merchant: ["claude.ai"]
+- category: gesundheit::vorleistung
+  match:
+    merchant: ["bfs health"]
+- category: urlaub::unterkunft
+  match:
+    merchant: ["moon hostel"]
+- category: freizeit
+  match:
+    merchant: ["karls dankt"]
