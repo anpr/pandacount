@@ -765,3 +765,43 @@
 - category: freizeit
   match:
     merchant: ["karls dankt"]
+- category: freizeit::restaurant
+  match:
+    merchant: ["cafe eule", "mai kudamm", "degusto", "beim hackl"]
+- category: freizeit::media
+  match:
+    merchant: ["lage der nation", "disneyplus"]
+- category: freizeit
+  match:
+    merchant: ["cinemaxx", "zoopalast"]
+    purpose: ["museumsstiftung"]
+- category: freizeit::magic
+  match:
+    merchant: ["cardcosmos"]
+- category: freizeit::konzert
+  match:
+    merchant: ["reservix"]
+- category: freizeit::buch
+  match:
+    merchant: ["buchhandlung koenig"]
+- category: kinder
+  match:
+    merchant: ["berlin zoo"]
+- category: kinder::schule-kita
+  match:
+    merchant: ["sodexo"]
+- category: persoenlich::kleidung
+  match:
+    merchant: ["h&m berlin", "mango", "schuhhaus horst", "galeria freiburg", "tante paula"]
+- category: persoenlich::handy
+  match:
+    merchant: ["alphacomm"]
+- category: wohnen::haushalt
+  match:
+    merchant: ["stoov", "blanco"]
+- category: mobilitaet::bahn
+  match:
+    merchant: ["trenitalia", "ns reizigers"]
+- category: finanzen::spenden
+  match:
+    merchant: ["campact"]
