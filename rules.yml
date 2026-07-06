@@ -883,3 +883,48 @@
 - category: kinder::schule-kita
   match:
     merchant: ["europa unter einem dach"]
+- category: freizeit::restaurant
+  match:
+    merchant: ["trattoria toscana", "sironi", "restaurant barberini", "il casale", "subway", "casualfood", "myth gmbh"]
+- category: freizeit::media
+  match:
+    merchant: ["blinkslabs"]
+- category: persoenlich::kleidung
+  match:
+    merchant: ["jack wolfskin", "zalando", "hejlich", "hm se0416"]
+- category: kinder::kleidung
+  match:
+    merchant: ["maikind"]
+- category: persoenlich::friseur
+  match:
+    merchant: ["body shop", "occitane", "la bruket"]
+- category: persoenlich::geschenke
+  match:
+    merchant: ["promobo", "unicummerchandising", "foto-giebel"]
+- category: persoenlich::elektronik
+  match:
+    merchant: ["coolblue"]
+- category: einkaufen
+  match:
+    merchant: ["rossmann", "kaufland"]
+- category: kinder
+  match:
+    merchant: ["zoo berlin"]
+- category: kinder::schule-kita
+  match:
+    merchant: ["mietra"]
+- category: freizeit::konzert
+  match:
+    merchant: ["waldbuehne"]
+- category: freizeit::sport
+  match:
+    merchant: ["parkbad"]
+- category: mobilitaet::taxi
+  match:
+    merchant: ["mustafa yaman", "taxibetrieb stamboliev"]
+- category: mobilitaet::auto
+  match:
+    merchant: ["mas autoport"]
+- category: freizeit::buch
+  match:
+    merchant: ["buchbox"]
