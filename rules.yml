@@ -643,3 +643,39 @@
 - category: persoenlich::elektronik
   match:
     party: ["SATURN ELECTRO"]
+- category: persoenlich::kleidung
+  match:
+    merchant: ["potthoff", "globetrotter", "avocado", "schiesser", "camper sl", "marco o polo"]
+- category: freizeit::restaurant
+  match:
+    merchant: ["laggner", "adams wohncafe", "studierendenwerk"]
+- category: einkaufen
+  match:
+    merchant: ["weinhandlung"]
+- category: freizeit::basteln
+  match:
+    merchant: ["creativmarkt"]
+- category: freizeit::media
+  match:
+    merchant: ["johann michael sailer"]
+- category: freizeit::sport
+  match:
+    merchant: ["sportpursuit"]
+- category: persoenlich::blumen
+  match:
+    purpose: ["gruent so gruen"]
+- category: wohnen::haushalt
+  match:
+    merchant: ["manufactum"]
+- category: gesundheit::krankenkasse
+  match:
+    merchant: ["techniker krankenkasse"]
+- category: gesundheit::vorleistung
+  match:
+    merchant: ["medas factoring"]
+- category: arbeit::gesa
+  match:
+    merchant: ["din media"]
+- category: kinder::schule-kita
+  match:
+    merchant: ["bezirksamt tempelhof", "derdiedas"]
