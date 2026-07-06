@@ -72,13 +72,27 @@ Fingerprint einer Zeile findet man per:
 
 ### 4. Abschluss-Messwert
 
-    SELECT year(book_date) jahr,
-           round(sum(CASE WHEN cat_offen AND amount_cents<0 THEN amount_cents ELSE 0 END)/100.0,2) offen_eur,
-           round(100.0 * sum(CASE WHEN cat_offen AND amount_cents<0 THEN -amount_cents ELSE 0 END)
-                 / nullif(sum(CASE WHEN amount_cents<0 THEN -amount_cents ELSE 0 END),0), 1) offen_pct
-    FROM (SELECT *, (coalesce(nullif(trim(category_manual),''), category) IS NULL
-                     AND transfer_category IS NULL) AS cat_offen FROM transactions)
-    GROUP BY 1 ORDER BY 1;
+WICHTIG: Der Nenner ist die **Konsum-Basis** — genettete Beträge auf giro/gesa/common, ohne
+Transfers, ohne die Top-Level `intern`/`einnahmen`/`sparen`. Alle Beträge (offen wie Basis) werden
+gleich genettet (Gutschriften mindern die Kategorie). NICHT `sum(alle Negativen)` als Nenner nehmen —
+das enthält Transfers, Stammkapital-Flüsse und extra-Konten und schönt die Quote massiv (Faktor ~3).
 
-Unter ~2–5 % (Andreas entscheidet): fertig. Zum Schluss `rules.yml` + `pandacount.duckdb`
-committen (git-commit-Skill; Subject `feat: kategorisierungs-session <datum>`).
+    WITH konsum AS (
+      SELECT year(book_date) jahr, amount_cents,
+             coalesce(nullif(trim(category_manual),''), category) AS cat
+      FROM transactions
+      WHERE transfer_category IS NULL
+        AND account IN ('giro','gesa','common')
+        AND split_part(coalesce(coalesce(nullif(trim(category_manual),''), category), ''), '::', 1)
+            NOT IN ('intern','einnahmen','sparen')
+    )
+    SELECT jahr,
+           round(sum(CASE WHEN cat IS NULL THEN amount_cents ELSE 0 END)/100.0, 2) offen_eur,
+           round(100.0 * sum(CASE WHEN cat IS NULL THEN amount_cents ELSE 0 END)
+                 / nullif(sum(amount_cents), 0), 1) offen_pct
+    FROM konsum GROUP BY 1 ORDER BY 1;
+
+Das ist dieselbe Basis wie die Ausgaben-Tabelle im Notebook `panda_uebersicht.py`, damit
+Session-Messwert und angezeigte Übersicht identisch sind. Unter ~5 % (Andreas entscheidet): fertig.
+Zum Schluss `rules.yml` + `pandacount.duckdb` committen
+(git-commit-Skill; Subject `feat: kategorisierungs-session <datum>`).
