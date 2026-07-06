@@ -805,3 +805,45 @@
 - category: finanzen::spenden
   match:
     merchant: ["campact"]
+- category: freizeit::restaurant
+  match:
+    merchant: ["baba angora", "monte mente", "zsa zsa", "starbucks", "cafe hardenberg", "tobi croissants", "alcatraz", "seepavillon"]
+- category: persoenlich::kleidung
+  match:
+    merchant: ["brax", "walbusch", "marc opolo", "groundies", "galeria"]
+- category: persoenlich::elektronik
+  match:
+    merchant: ["galaxus"]
+- category: persoenlich::friseur
+  match:
+    merchant: ["ines heinelt", "treatwell"]
+- category: persoenlich::geschenke
+  match:
+    merchant: ["etsyireland"]
+- category: kinder::schule-kita
+  match:
+    purpose: ["europa unter einem dach"]
+- category: gesundheit::vorleistung
+  match:
+    merchant: ["christine pfrommer"]
+- category: freizeit::sport
+  match:
+    merchant: ["berlinerbader"]
+- category: freizeit::poker
+  match:
+    merchant: ["max value"]
+- category: finanzen::mitgliedsbeitraege
+  match:
+    merchant: ["iale region"]
+- category: mobilitaet::faehre
+  match:
+    merchant: ["nils holgersson"]
+- category: mobilitaet::fernbus
+  match:
+    merchant: ["flixbus"]
+- category: kinder::kleidung
+  match:
+    merchant: ["smilla"]
+- category: sonstiges::porto
+  match:
+    merchant: ["deutsche post ag", "deutsche post 4"]
