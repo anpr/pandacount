@@ -101,16 +101,65 @@ def _(einnahmen_summe, euro, jahres_basis, jahr_select, mo, pc):
     ausgaben_tab["ø_monat"] = (ausgaben_tab.summe / _monate).round(0)
     _ausgaben_summe = ausgaben_tab.summe.sum()
     _saldo = einnahmen_summe + _ausgaben_summe + _sparen
+    ausgaben_table = mo.ui.table(ausgaben_tab.round(2), selection="single", page_size=20)
     mo.vstack(
         [
             mo.md(
                 f"## Ausgaben {jahr_select.value} — **{euro(_ausgaben_summe)}**\n"
-                f"Sparen: **{euro(_sparen)}** · Saldo: **{euro(_saldo)}**"
+                f"Sparen: **{euro(_sparen)}** · Saldo: **{euro(_saldo)}** · "
+                f"_Zeile anklicken für Details ↓_"
             ),
-            mo.ui.table(ausgaben_tab.round(2), page_size=20),
+            ausgaben_table,
         ]
     )
-    return (ausgaben_tab,)
+    return ausgaben_tab, ausgaben_table
+
+
+@app.cell
+def _(ausgaben_table, euro, jahres_basis, jahr_select, mo, monatsspalten, pc):
+    # Reingehen: Klick auf eine Ausgaben-Zeile -> 2. Ebene pro Monat + Einzelbuchungen
+    _sel = ausgaben_table.value
+    if _sel is None or len(_sel) == 0:
+        drilldown = mo.callout(
+            mo.md("**Klick auf eine Zeile der Ausgaben-Tabelle**, um die Kategorie aufzuklappen."),
+            kind="neutral",
+        )
+    else:
+        _kat = _sel.iloc[0]["kategorie"]
+        _df = jahres_basis(pc, jahr_select.value)
+        _sub = _df[_df.top == _kat].copy()
+        _sub["ebene2"] = (
+            _sub["cat"].fillna("(unkategorisiert)").str.replace(f"{_kat}::", "", regex=False)
+        )
+
+        _pivot = _sub.pivot_table(
+            index="ebene2", columns="monat", values="amount", aggfunc="sum", fill_value=0.0
+        )
+        _pivot = monatsspalten(_pivot)
+        _pivot["Σ"] = _pivot.sum(axis=1)
+        _pivot = _pivot.sort_values("Σ").round(0)
+
+        _tx = _sub.sort_values("amount")[
+            ["book_date", "account", "ebene2", "party", "purpose", "amount"]
+        ].copy()
+        _tx["book_date"] = _tx["book_date"].dt.strftime("%d.%m.%Y")
+        _tx["purpose"] = _tx["purpose"].fillna("").str.slice(0, 45)
+        _tx.columns = ["Datum", "Konto", "Unterkat.", "Party", "Zweck", "Betrag €"]
+
+        drilldown = mo.vstack(
+            [
+                mo.md(
+                    f"### ▸ {_kat} {jahr_select.value} — "
+                    f"**{euro(_sub.amount.sum())}** in {len(_sub)} Buchungen"
+                ),
+                mo.md("**Pro Monat (2. Ebene)**"),
+                mo.ui.table(_pivot.reset_index(), page_size=25, selection=None),
+                mo.md(f"**Einzelbuchungen** ({len(_tx)})"),
+                mo.ui.table(_tx.round(2), page_size=15, selection=None),
+            ]
+        )
+    drilldown
+    return
 
 
 @app.cell
@@ -198,35 +247,6 @@ def _(FARBE_AQUA, FARBE_BLAU, jahres_basis, jahr_select, mo, pc, plt):
     _ax.legend(frameon=False, loc="upper left")
     _fig.tight_layout()
     mo.vstack([_fig])
-    return
-
-
-@app.cell
-def _(mo, pc, top_level):
-    _tops = sorted({top_level(c) for c in pc["cat"].dropna().unique()})
-    drill_select = mo.ui.dropdown(options=_tops, value="wohnen", label="Kategorie aufklappen")
-    drill_select
-    return (drill_select,)
-
-
-@app.cell
-def _(drill_select, jahres_basis, jahr_select, mo, monatsspalten, pc):
-    # Drilldown: 2. Ebene der gewählten Kategorie × Monat
-    _df = jahres_basis(pc, jahr_select.value)
-    _sub = _df[_df.top == drill_select.value].copy()
-    _sub["sub"] = _sub["cat"].fillna("(unkategorisiert)")
-    _pivot = _sub.pivot_table(
-        index="sub", columns="monat", values="amount", aggfunc="sum", fill_value=0.0
-    )
-    _pivot = monatsspalten(_pivot)
-    _pivot["Σ"] = _pivot.sum(axis=1)
-    _pivot = _pivot.sort_values("Σ")
-    mo.vstack(
-        [
-            mo.md(f"### {drill_select.value} — 2. Ebene ({jahr_select.value})"),
-            mo.ui.table(_pivot.round(0).reset_index(), page_size=25),
-        ]
-    )
     return
 
 
